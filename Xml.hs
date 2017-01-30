@@ -23,27 +23,32 @@ replace match replacement (c : cs) =
 escape :: String -> String
 escape =
   replace '"' "\\\"" .
-  replace '"' "\\\\"
+  replace '\\' "\\\\"
 
 flatten :: [[a]] -> [a]
 flatten [] = []
 flatten ([] : remaining) = flatten remaining
 flatten ((x : xs) : remaining) = x : flatten (xs : remaining)
 
+-- TODO: if node has no children, don't have separate end tag
 toLines :: Xml -> [String]
-tolines (XmlNode tag attributes children) =
+toLines (XmlNode tag attributes children) =
   let
+    individualAttributeString (name, value) = name ++ "=\"" ++ (escape value) ++ "\""
     attributeString =
       case attributes of
         [] -> ""
         _ ->
           " " ++
-          intercalate " " (map (\(name, value) -> name ++ "=\"" ++ (escape value) ++ "\"") attributes)
+          intercalate " " (map individualAttributeString attributes)
   in
     ["<" ++ tag ++ attributeString ++ ">"] ++
-    indent (flatten (map toLines children)) ++
+    (indent (flatten (map toLines children))) ++
     ["</" ++ tag ++ ">"]
 toLines (TextNode text) = [text]
 
 instance Show Xml where
   show = intercalate "\n" . toLines
+
+class Xmlable a where
+  toXml :: a -> Xml

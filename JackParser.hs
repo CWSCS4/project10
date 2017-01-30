@@ -2,44 +2,89 @@ module JackParser where
 
 import Data.Char (isDigit, isAlpha, isSpace)
 import Control.Monad (liftM, ap)
+import Xml
 
 data Class
   = Class String [ClassVar] [Subroutine]
-  deriving Show
+instance Xmlable Class where
+  toXml (Class name classVars subroutines) =
+    XmlNode
+      "class"
+      [("name", name)]
+      [ XmlNode "vardecs" [] (map toXml classVars)
+      , XmlNode "subroutines" [] (map toXml subroutines)
+      ]
 
 data Type
   = JackInt
   | JackChar
   | JackBool
   | JackClass String
-  deriving Show
+instance Xmlable Type where
+  toXml JackInt = XmlNode "int" [] []
+  toXml JackChar = XmlNode "char" [] []
+  toXml JackBool = XmlNode "bool" [] []
+  toXml (JackClass className) = XmlNode "class" [("name", className)] []
 
 data ClassVarScope
   = Static
   | Field
-  deriving Show
+instance Show ClassVarScope where
+  show Static = "static"
+  show Field = "field"
 
 data ClassVar
   = ClassVar ClassVarScope VarDec
-  deriving Show
+instance Xmlable ClassVar where
+  toXml (ClassVar scope dec) =
+    XmlNode "classVar" [("scope", show scope)] [toXml dec]
 
 data SubroutineType
   = Method
   | Constructor
   | Function
-  deriving Show
+instance Show SubroutineType where
+  show Method = "method"
+  show Constructor = "constructor"
+  show Function = "function"
 
 data Subroutine
   = Subroutine SubroutineType (Maybe Type) String [Parameter] [VarDec] [Statement]
-  deriving Show
+instance Xmlable Subroutine where
+  toXml (Subroutine subroutineType returnType name parameters localVars body) =
+    let
+      returnTypeXml =
+        case returnType of
+          Nothing -> []
+          Just returnType -> [toXml returnType]
+    in
+      XmlNode
+        "subroutine"
+        [ ("type", show subroutineType)
+        , ("name", name)
+        ]
+        [ XmlNode "returnType" [] returnTypeXml
+        , XmlNode "parameters" [] (map toXml parameters)
+        , XmlNode "locals" [] (map toXml localVars)
+        , XmlNode "body" [] (map toXml body)
+        ]
 
 data Parameter =
   Parameter Type String
-  deriving Show
+instance Xmlable Parameter where
+  toXml (Parameter paramType name) =
+    XmlNode "parameter" [("name", name)] [toXml paramType]
 
 data VarDec =
   VarDec Type [String]
-  deriving Show
+instance Xmlable VarDec where
+  toXml (VarDec varType names) =
+    XmlNode
+      "variable"
+      []
+      [ XmlNode "type" [] [toXml varType]
+      , XmlNode "names" [] (map (\name -> XmlNode "name" [] [TextNode name]) names)
+      ]
 
 data Statement
   = Let VarAccess Expression
@@ -47,16 +92,13 @@ data Statement
   | While Expression [Statement]
   | Do SubCall
   | Return (Maybe Expression)
-  deriving Show
 
 data VarAccess
   = Var String
   | Subscript String Expression
-  deriving Show
 
 data Expression
   = Expression Term [(Op, Term)]
-  deriving Show
 
 data Op
   = Plus
@@ -68,7 +110,6 @@ data Op
   | LessThan
   | GreaterThan
   | EqualTo
-  deriving Show
 
 data Term
   = IntConst Int
@@ -80,17 +121,14 @@ data Term
   | Access VarAccess
   | SubroutineCall SubCall
   | Unary UnaryOp Term
-  deriving Show
 
 data SubCall
   = Unqualified String [Expression]
   | Qualified String String [Expression]
-  deriving Show
 
 data UnaryOp
   = LogicalNot
   | IntegerNegate
-  deriving Show
 
 newtype Parser a = Parser (String -> Maybe (a, String))
 
