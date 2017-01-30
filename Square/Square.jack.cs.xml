@@ -1,0 +1,752 @@
+<class name="Square">
+	<classVar scope="field">
+		<variable>
+			<int />
+			<name>
+				x
+			</name>
+			<name>
+				y
+			</name>
+		</variable>
+	</classVar>
+	<classVar scope="field">
+		<variable>
+			<int />
+			<name>
+				size
+			</name>
+		</variable>
+	</classVar>
+	<subroutine type="constructor" name="new">
+		<returnType>
+			<class name="Square" />
+		</returnType>
+		<parameters>
+			<parameter name="Ax">
+				<int />
+			</parameter>
+			<parameter name="Ay">
+				<int />
+			</parameter>
+			<parameter name="Asize">
+				<int />
+			</parameter>
+		</parameters>
+		<locals />
+		<body>
+			<let>
+				<access>
+					<var name="x" />
+				</access>
+				<expression>
+					<access>
+						<var name="Ax" />
+					</access>
+				</expression>
+			</let>
+			<let>
+				<access>
+					<var name="y" />
+				</access>
+				<expression>
+					<access>
+						<var name="Ay" />
+					</access>
+				</expression>
+			</let>
+			<let>
+				<access>
+					<var name="size" />
+				</access>
+				<expression>
+					<access>
+						<var name="Asize" />
+					</access>
+				</expression>
+			</let>
+			<do>
+				<unqualified name="draw" />
+			</do>
+			<return>
+				<expression>
+					<this />
+				</expression>
+			</return>
+		</body>
+	</subroutine>
+	<subroutine type="method" name="dispose">
+		<parameters />
+		<locals />
+		<body>
+			<do>
+				<qualified namespace="Memory" name="deAlloc">
+					<expression>
+						<this />
+					</expression>
+				</qualified>
+			</do>
+			<return />
+		</body>
+	</subroutine>
+	<subroutine type="method" name="draw">
+		<parameters />
+		<locals />
+		<body>
+			<do>
+				<qualified namespace="Screen" name="setColor">
+					<expression>
+						<bool value="True" />
+					</expression>
+				</qualified>
+			</do>
+			<do>
+				<qualified namespace="Screen" name="drawRectangle">
+					<expression>
+						<access>
+							<var name="x" />
+						</access>
+					</expression>
+					<expression>
+						<access>
+							<var name="y" />
+						</access>
+					</expression>
+					<expression>
+						<access>
+							<var name="x" />
+						</access>
+						<plus />
+						<access>
+							<var name="size" />
+						</access>
+					</expression>
+					<expression>
+						<access>
+							<var name="y" />
+						</access>
+						<plus />
+						<access>
+							<var name="size" />
+						</access>
+					</expression>
+				</qualified>
+			</do>
+			<return />
+		</body>
+	</subroutine>
+	<subroutine type="method" name="erase">
+		<parameters />
+		<locals />
+		<body>
+			<do>
+				<qualified namespace="Screen" name="setColor">
+					<expression>
+						<bool value="False" />
+					</expression>
+				</qualified>
+			</do>
+			<do>
+				<qualified namespace="Screen" name="drawRectangle">
+					<expression>
+						<access>
+							<var name="x" />
+						</access>
+					</expression>
+					<expression>
+						<access>
+							<var name="y" />
+						</access>
+					</expression>
+					<expression>
+						<access>
+							<var name="x" />
+						</access>
+						<plus />
+						<access>
+							<var name="size" />
+						</access>
+					</expression>
+					<expression>
+						<access>
+							<var name="y" />
+						</access>
+						<plus />
+						<access>
+							<var name="size" />
+						</access>
+					</expression>
+				</qualified>
+			</do>
+			<return />
+		</body>
+	</subroutine>
+	<subroutine type="method" name="incSize">
+		<parameters />
+		<locals />
+		<body>
+			<if>
+				<expression>
+					<expression>
+						<expression>
+							<access>
+								<var name="y" />
+							</access>
+							<plus />
+							<access>
+								<var name="size" />
+							</access>
+						</expression>
+						<lt />
+						<int value="254" />
+					</expression>
+					<and />
+					<expression>
+						<expression>
+							<access>
+								<var name="x" />
+							</access>
+							<plus />
+							<access>
+								<var name="size" />
+							</access>
+						</expression>
+						<lt />
+						<int value="510" />
+					</expression>
+				</expression>
+				<true>
+					<do>
+						<unqualified name="erase" />
+					</do>
+					<let>
+						<access>
+							<var name="size" />
+						</access>
+						<expression>
+							<access>
+								<var name="size" />
+							</access>
+							<plus />
+							<int value="2" />
+						</expression>
+					</let>
+					<do>
+						<unqualified name="draw" />
+					</do>
+				</true>
+				<false />
+			</if>
+			<return />
+		</body>
+	</subroutine>
+	<subroutine type="method" name="decSize">
+		<parameters />
+		<locals />
+		<body>
+			<if>
+				<expression>
+					<access>
+						<var name="size" />
+					</access>
+					<gt />
+					<int value="2" />
+				</expression>
+				<true>
+					<do>
+						<unqualified name="erase" />
+					</do>
+					<let>
+						<access>
+							<var name="size" />
+						</access>
+						<expression>
+							<access>
+								<var name="size" />
+							</access>
+							<minus />
+							<int value="2" />
+						</expression>
+					</let>
+					<do>
+						<unqualified name="draw" />
+					</do>
+				</true>
+				<false />
+			</if>
+			<return />
+		</body>
+	</subroutine>
+	<subroutine type="method" name="moveUp">
+		<parameters />
+		<locals />
+		<body>
+			<if>
+				<expression>
+					<access>
+						<var name="y" />
+					</access>
+					<gt />
+					<int value="1" />
+				</expression>
+				<true>
+					<do>
+						<qualified namespace="Screen" name="setColor">
+							<expression>
+								<bool value="False" />
+							</expression>
+						</qualified>
+					</do>
+					<do>
+						<qualified namespace="Screen" name="drawRectangle">
+							<expression>
+								<access>
+									<var name="x" />
+								</access>
+							</expression>
+							<expression>
+								<expression>
+									<access>
+										<var name="y" />
+									</access>
+									<plus />
+									<access>
+										<var name="size" />
+									</access>
+								</expression>
+								<minus />
+								<int value="1" />
+							</expression>
+							<expression>
+								<access>
+									<var name="x" />
+								</access>
+								<plus />
+								<access>
+									<var name="size" />
+								</access>
+							</expression>
+							<expression>
+								<access>
+									<var name="y" />
+								</access>
+								<plus />
+								<access>
+									<var name="size" />
+								</access>
+							</expression>
+						</qualified>
+					</do>
+					<let>
+						<access>
+							<var name="y" />
+						</access>
+						<expression>
+							<access>
+								<var name="y" />
+							</access>
+							<minus />
+							<int value="2" />
+						</expression>
+					</let>
+					<do>
+						<qualified namespace="Screen" name="setColor">
+							<expression>
+								<bool value="True" />
+							</expression>
+						</qualified>
+					</do>
+					<do>
+						<qualified namespace="Screen" name="drawRectangle">
+							<expression>
+								<access>
+									<var name="x" />
+								</access>
+							</expression>
+							<expression>
+								<access>
+									<var name="y" />
+								</access>
+							</expression>
+							<expression>
+								<access>
+									<var name="x" />
+								</access>
+								<plus />
+								<access>
+									<var name="size" />
+								</access>
+							</expression>
+							<expression>
+								<access>
+									<var name="y" />
+								</access>
+								<plus />
+								<int value="1" />
+							</expression>
+						</qualified>
+					</do>
+				</true>
+				<false />
+			</if>
+			<return />
+		</body>
+	</subroutine>
+	<subroutine type="method" name="moveDown">
+		<parameters />
+		<locals />
+		<body>
+			<if>
+				<expression>
+					<expression>
+						<access>
+							<var name="y" />
+						</access>
+						<plus />
+						<access>
+							<var name="size" />
+						</access>
+					</expression>
+					<lt />
+					<int value="254" />
+				</expression>
+				<true>
+					<do>
+						<qualified namespace="Screen" name="setColor">
+							<expression>
+								<bool value="False" />
+							</expression>
+						</qualified>
+					</do>
+					<do>
+						<qualified namespace="Screen" name="drawRectangle">
+							<expression>
+								<access>
+									<var name="x" />
+								</access>
+							</expression>
+							<expression>
+								<access>
+									<var name="y" />
+								</access>
+							</expression>
+							<expression>
+								<access>
+									<var name="x" />
+								</access>
+								<plus />
+								<access>
+									<var name="size" />
+								</access>
+							</expression>
+							<expression>
+								<access>
+									<var name="y" />
+								</access>
+								<plus />
+								<int value="1" />
+							</expression>
+						</qualified>
+					</do>
+					<let>
+						<access>
+							<var name="y" />
+						</access>
+						<expression>
+							<access>
+								<var name="y" />
+							</access>
+							<plus />
+							<int value="2" />
+						</expression>
+					</let>
+					<do>
+						<qualified namespace="Screen" name="setColor">
+							<expression>
+								<bool value="True" />
+							</expression>
+						</qualified>
+					</do>
+					<do>
+						<qualified namespace="Screen" name="drawRectangle">
+							<expression>
+								<access>
+									<var name="x" />
+								</access>
+							</expression>
+							<expression>
+								<expression>
+									<access>
+										<var name="y" />
+									</access>
+									<plus />
+									<access>
+										<var name="size" />
+									</access>
+								</expression>
+								<minus />
+								<int value="1" />
+							</expression>
+							<expression>
+								<access>
+									<var name="x" />
+								</access>
+								<plus />
+								<access>
+									<var name="size" />
+								</access>
+							</expression>
+							<expression>
+								<access>
+									<var name="y" />
+								</access>
+								<plus />
+								<access>
+									<var name="size" />
+								</access>
+							</expression>
+						</qualified>
+					</do>
+				</true>
+				<false />
+			</if>
+			<return />
+		</body>
+	</subroutine>
+	<subroutine type="method" name="moveLeft">
+		<parameters />
+		<locals />
+		<body>
+			<if>
+				<expression>
+					<access>
+						<var name="x" />
+					</access>
+					<gt />
+					<int value="1" />
+				</expression>
+				<true>
+					<do>
+						<qualified namespace="Screen" name="setColor">
+							<expression>
+								<bool value="False" />
+							</expression>
+						</qualified>
+					</do>
+					<do>
+						<qualified namespace="Screen" name="drawRectangle">
+							<expression>
+								<expression>
+									<access>
+										<var name="x" />
+									</access>
+									<plus />
+									<access>
+										<var name="size" />
+									</access>
+								</expression>
+								<minus />
+								<int value="1" />
+							</expression>
+							<expression>
+								<access>
+									<var name="y" />
+								</access>
+							</expression>
+							<expression>
+								<access>
+									<var name="x" />
+								</access>
+								<plus />
+								<access>
+									<var name="size" />
+								</access>
+							</expression>
+							<expression>
+								<access>
+									<var name="y" />
+								</access>
+								<plus />
+								<access>
+									<var name="size" />
+								</access>
+							</expression>
+						</qualified>
+					</do>
+					<let>
+						<access>
+							<var name="x" />
+						</access>
+						<expression>
+							<access>
+								<var name="x" />
+							</access>
+							<minus />
+							<int value="2" />
+						</expression>
+					</let>
+					<do>
+						<qualified namespace="Screen" name="setColor">
+							<expression>
+								<bool value="True" />
+							</expression>
+						</qualified>
+					</do>
+					<do>
+						<qualified namespace="Screen" name="drawRectangle">
+							<expression>
+								<access>
+									<var name="x" />
+								</access>
+							</expression>
+							<expression>
+								<access>
+									<var name="y" />
+								</access>
+							</expression>
+							<expression>
+								<access>
+									<var name="x" />
+								</access>
+								<plus />
+								<int value="1" />
+							</expression>
+							<expression>
+								<access>
+									<var name="y" />
+								</access>
+								<plus />
+								<access>
+									<var name="size" />
+								</access>
+							</expression>
+						</qualified>
+					</do>
+				</true>
+				<false />
+			</if>
+			<return />
+		</body>
+	</subroutine>
+	<subroutine type="method" name="moveRight">
+		<parameters />
+		<locals />
+		<body>
+			<if>
+				<expression>
+					<expression>
+						<access>
+							<var name="x" />
+						</access>
+						<plus />
+						<access>
+							<var name="size" />
+						</access>
+					</expression>
+					<lt />
+					<int value="510" />
+				</expression>
+				<true>
+					<do>
+						<qualified namespace="Screen" name="setColor">
+							<expression>
+								<bool value="False" />
+							</expression>
+						</qualified>
+					</do>
+					<do>
+						<qualified namespace="Screen" name="drawRectangle">
+							<expression>
+								<access>
+									<var name="x" />
+								</access>
+							</expression>
+							<expression>
+								<access>
+									<var name="y" />
+								</access>
+							</expression>
+							<expression>
+								<access>
+									<var name="x" />
+								</access>
+								<plus />
+								<int value="1" />
+							</expression>
+							<expression>
+								<access>
+									<var name="y" />
+								</access>
+								<plus />
+								<access>
+									<var name="size" />
+								</access>
+							</expression>
+						</qualified>
+					</do>
+					<let>
+						<access>
+							<var name="x" />
+						</access>
+						<expression>
+							<access>
+								<var name="x" />
+							</access>
+							<plus />
+							<int value="2" />
+						</expression>
+					</let>
+					<do>
+						<qualified namespace="Screen" name="setColor">
+							<expression>
+								<bool value="True" />
+							</expression>
+						</qualified>
+					</do>
+					<do>
+						<qualified namespace="Screen" name="drawRectangle">
+							<expression>
+								<expression>
+									<access>
+										<var name="x" />
+									</access>
+									<plus />
+									<access>
+										<var name="size" />
+									</access>
+								</expression>
+								<minus />
+								<int value="1" />
+							</expression>
+							<expression>
+								<access>
+									<var name="y" />
+								</access>
+							</expression>
+							<expression>
+								<access>
+									<var name="x" />
+								</access>
+								<plus />
+								<access>
+									<var name="size" />
+								</access>
+							</expression>
+							<expression>
+								<access>
+									<var name="y" />
+								</access>
+								<plus />
+								<access>
+									<var name="size" />
+								</access>
+							</expression>
+						</qualified>
+					</do>
+				</true>
+				<false />
+			</if>
+			<return />
+		</body>
+	</subroutine>
+</class>

@@ -1,0 +1,32 @@
+<class name="Main">
+	<subroutine type="function" name="main">
+		<parameters />
+		<locals>
+			<variable>
+				<class name="SquareGame" />
+				<name>
+					game
+				</name>
+			</variable>
+		</locals>
+		<body>
+			<let>
+				<access>
+					<var name="game" />
+				</access>
+				<expression>
+					<access>
+						<var name="game" />
+					</access>
+				</expression>
+			</let>
+			<do>
+				<qualified namespace="game" name="run" />
+			</do>
+			<do>
+				<qualified namespace="game" name="dispose" />
+			</do>
+			<return />
+		</body>
+	</subroutine>
+</class>

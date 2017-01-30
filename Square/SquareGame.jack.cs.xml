@@ -1,0 +1,374 @@
+<class name="SquareGame">
+	<classVar scope="field">
+		<variable>
+			<class name="Square" />
+			<name>
+				square
+			</name>
+		</variable>
+	</classVar>
+	<classVar scope="field">
+		<variable>
+			<int />
+			<name>
+				direction
+			</name>
+		</variable>
+	</classVar>
+	<subroutine type="constructor" name="new">
+		<returnType>
+			<class name="SquareGame" />
+		</returnType>
+		<parameters />
+		<locals />
+		<body>
+			<let>
+				<access>
+					<var name="square" />
+				</access>
+				<expression>
+					<call>
+						<qualified namespace="Square" name="new">
+							<expression>
+								<int value="0" />
+							</expression>
+							<expression>
+								<int value="0" />
+							</expression>
+							<expression>
+								<int value="30" />
+							</expression>
+						</qualified>
+					</call>
+				</expression>
+			</let>
+			<let>
+				<access>
+					<var name="direction" />
+				</access>
+				<expression>
+					<int value="0" />
+				</expression>
+			</let>
+			<return>
+				<expression>
+					<this />
+				</expression>
+			</return>
+		</body>
+	</subroutine>
+	<subroutine type="method" name="dispose">
+		<parameters />
+		<locals />
+		<body>
+			<do>
+				<qualified namespace="square" name="dispose" />
+			</do>
+			<do>
+				<qualified namespace="Memory" name="deAlloc">
+					<expression>
+						<this />
+					</expression>
+				</qualified>
+			</do>
+			<return />
+		</body>
+	</subroutine>
+	<subroutine type="method" name="run">
+		<parameters />
+		<locals>
+			<variable>
+				<char />
+				<name>
+					key
+				</name>
+			</variable>
+			<variable>
+				<bool />
+				<name>
+					exit
+				</name>
+			</variable>
+		</locals>
+		<body>
+			<let>
+				<access>
+					<var name="exit" />
+				</access>
+				<expression>
+					<bool value="False" />
+				</expression>
+			</let>
+			<while>
+				<expression>
+					<unary>
+						<not />
+						<access>
+							<var name="exit" />
+						</access>
+					</unary>
+				</expression>
+				<block>
+					<while>
+						<expression>
+							<access>
+								<var name="key" />
+							</access>
+							<equal />
+							<int value="0" />
+						</expression>
+						<block>
+							<let>
+								<access>
+									<var name="key" />
+								</access>
+								<expression>
+									<call>
+										<qualified namespace="Keyboard" name="keyPressed" />
+									</call>
+								</expression>
+							</let>
+							<do>
+								<unqualified name="moveSquare" />
+							</do>
+						</block>
+					</while>
+					<if>
+						<expression>
+							<access>
+								<var name="key" />
+							</access>
+							<equal />
+							<int value="81" />
+						</expression>
+						<true>
+							<let>
+								<access>
+									<var name="exit" />
+								</access>
+								<expression>
+									<bool value="True" />
+								</expression>
+							</let>
+						</true>
+						<false />
+					</if>
+					<if>
+						<expression>
+							<access>
+								<var name="key" />
+							</access>
+							<equal />
+							<int value="90" />
+						</expression>
+						<true>
+							<do>
+								<qualified namespace="square" name="decSize" />
+							</do>
+						</true>
+						<false />
+					</if>
+					<if>
+						<expression>
+							<access>
+								<var name="key" />
+							</access>
+							<equal />
+							<int value="88" />
+						</expression>
+						<true>
+							<do>
+								<qualified namespace="square" name="incSize" />
+							</do>
+						</true>
+						<false />
+					</if>
+					<if>
+						<expression>
+							<access>
+								<var name="key" />
+							</access>
+							<equal />
+							<int value="131" />
+						</expression>
+						<true>
+							<let>
+								<access>
+									<var name="direction" />
+								</access>
+								<expression>
+									<int value="1" />
+								</expression>
+							</let>
+						</true>
+						<false />
+					</if>
+					<if>
+						<expression>
+							<access>
+								<var name="key" />
+							</access>
+							<equal />
+							<int value="133" />
+						</expression>
+						<true>
+							<let>
+								<access>
+									<var name="direction" />
+								</access>
+								<expression>
+									<int value="2" />
+								</expression>
+							</let>
+						</true>
+						<false />
+					</if>
+					<if>
+						<expression>
+							<access>
+								<var name="key" />
+							</access>
+							<equal />
+							<int value="130" />
+						</expression>
+						<true>
+							<let>
+								<access>
+									<var name="direction" />
+								</access>
+								<expression>
+									<int value="3" />
+								</expression>
+							</let>
+						</true>
+						<false />
+					</if>
+					<if>
+						<expression>
+							<access>
+								<var name="key" />
+							</access>
+							<equal />
+							<int value="132" />
+						</expression>
+						<true>
+							<let>
+								<access>
+									<var name="direction" />
+								</access>
+								<expression>
+									<int value="4" />
+								</expression>
+							</let>
+						</true>
+						<false />
+					</if>
+					<while>
+						<expression>
+							<unary>
+								<not />
+								<expression>
+									<access>
+										<var name="key" />
+									</access>
+									<equal />
+									<int value="0" />
+								</expression>
+							</unary>
+						</expression>
+						<block>
+							<let>
+								<access>
+									<var name="key" />
+								</access>
+								<expression>
+									<call>
+										<qualified namespace="Keyboard" name="keyPressed" />
+									</call>
+								</expression>
+							</let>
+							<do>
+								<unqualified name="moveSquare" />
+							</do>
+						</block>
+					</while>
+				</block>
+			</while>
+			<return />
+		</body>
+	</subroutine>
+	<subroutine type="method" name="moveSquare">
+		<parameters />
+		<locals />
+		<body>
+			<if>
+				<expression>
+					<access>
+						<var name="direction" />
+					</access>
+					<equal />
+					<int value="1" />
+				</expression>
+				<true>
+					<do>
+						<qualified namespace="square" name="moveUp" />
+					</do>
+				</true>
+				<false />
+			</if>
+			<if>
+				<expression>
+					<access>
+						<var name="direction" />
+					</access>
+					<equal />
+					<int value="2" />
+				</expression>
+				<true>
+					<do>
+						<qualified namespace="square" name="moveDown" />
+					</do>
+				</true>
+				<false />
+			</if>
+			<if>
+				<expression>
+					<access>
+						<var name="direction" />
+					</access>
+					<equal />
+					<int value="3" />
+				</expression>
+				<true>
+					<do>
+						<qualified namespace="square" name="moveLeft" />
+					</do>
+				</true>
+				<false />
+			</if>
+			<if>
+				<expression>
+					<access>
+						<var name="direction" />
+					</access>
+					<equal />
+					<int value="4" />
+				</expression>
+				<true>
+					<do>
+						<qualified namespace="square" name="moveRight" />
+					</do>
+				</true>
+				<false />
+			</if>
+			<do>
+				<qualified namespace="Sys" name="wait">
+					<expression>
+						<int value="5" />
+					</expression>
+				</qualified>
+			</do>
+			<return />
+		</body>
+	</subroutine>
+</class>

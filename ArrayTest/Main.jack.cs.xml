@@ -1,0 +1,198 @@
+<class name="Main">
+	<subroutine type="function" name="main">
+		<parameters />
+		<locals>
+			<variable>
+				<class name="Array" />
+				<name>
+					a
+				</name>
+			</variable>
+			<variable>
+				<int />
+				<name>
+					length
+				</name>
+			</variable>
+			<variable>
+				<int />
+				<name>
+					i
+				</name>
+				<name>
+					sum
+				</name>
+			</variable>
+		</locals>
+		<body>
+			<let>
+				<access>
+					<var name="length" />
+				</access>
+				<expression>
+					<call>
+						<qualified namespace="Keyboard" name="readInt">
+							<expression>
+								<string value="HOW MANY NUMBERS? " />
+							</expression>
+						</qualified>
+					</call>
+				</expression>
+			</let>
+			<let>
+				<access>
+					<var name="a" />
+				</access>
+				<expression>
+					<call>
+						<qualified namespace="Array" name="new">
+							<expression>
+								<access>
+									<var name="length" />
+								</access>
+							</expression>
+						</qualified>
+					</call>
+				</expression>
+			</let>
+			<let>
+				<access>
+					<var name="i" />
+				</access>
+				<expression>
+					<int value="0" />
+				</expression>
+			</let>
+			<while>
+				<expression>
+					<access>
+						<var name="i" />
+					</access>
+					<lt />
+					<access>
+						<var name="length" />
+					</access>
+				</expression>
+				<block>
+					<let>
+						<access>
+							<subscript name="a">
+								<expression>
+									<access>
+										<var name="i" />
+									</access>
+								</expression>
+							</subscript>
+						</access>
+						<expression>
+							<call>
+								<qualified namespace="Keyboard" name="readInt">
+									<expression>
+										<string value="ENTER THE NEXT NUMBER: " />
+									</expression>
+								</qualified>
+							</call>
+						</expression>
+					</let>
+					<let>
+						<access>
+							<var name="i" />
+						</access>
+						<expression>
+							<access>
+								<var name="i" />
+							</access>
+							<plus />
+							<int value="1" />
+						</expression>
+					</let>
+				</block>
+			</while>
+			<let>
+				<access>
+					<var name="i" />
+				</access>
+				<expression>
+					<int value="0" />
+				</expression>
+			</let>
+			<let>
+				<access>
+					<var name="sum" />
+				</access>
+				<expression>
+					<int value="0" />
+				</expression>
+			</let>
+			<while>
+				<expression>
+					<access>
+						<var name="i" />
+					</access>
+					<lt />
+					<access>
+						<var name="length" />
+					</access>
+				</expression>
+				<block>
+					<let>
+						<access>
+							<var name="sum" />
+						</access>
+						<expression>
+							<access>
+								<var name="sum" />
+							</access>
+							<plus />
+							<access>
+								<subscript name="a">
+									<expression>
+										<access>
+											<var name="i" />
+										</access>
+									</expression>
+								</subscript>
+							</access>
+						</expression>
+					</let>
+					<let>
+						<access>
+							<var name="i" />
+						</access>
+						<expression>
+							<access>
+								<var name="i" />
+							</access>
+							<plus />
+							<int value="1" />
+						</expression>
+					</let>
+				</block>
+			</while>
+			<do>
+				<qualified namespace="Output" name="printString">
+					<expression>
+						<string value="THE AVERAGE IS: " />
+					</expression>
+				</qualified>
+			</do>
+			<do>
+				<qualified namespace="Output" name="printInt">
+					<expression>
+						<access>
+							<var name="sum" />
+						</access>
+						<div />
+						<access>
+							<var name="length" />
+						</access>
+					</expression>
+				</qualified>
+			</do>
+			<do>
+				<qualified namespace="Output" name="println" />
+			</do>
+			<return />
+		</body>
+	</subroutine>
+</class>

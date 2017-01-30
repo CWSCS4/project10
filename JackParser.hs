@@ -2,7 +2,7 @@ module JackParser where
 
 import Data.Char (isDigit, isAlpha, isSpace)
 import Control.Monad (liftM, ap)
-import Xml
+import Xml (Xml (TextNode, XmlNode), Xmlable, toXml, flatten)
 
 data Class
   = Class String [ClassVar] [Subroutine]
@@ -11,9 +11,7 @@ instance Xmlable Class where
     XmlNode
       "class"
       [("name", name)]
-      [ XmlNode "vardecs" [] (map toXml classVars)
-      , XmlNode "subroutines" [] (map toXml subroutines)
-      ]
+      (map toXml classVars ++ map toXml subroutines)
 
 data Type
   = JackInt
@@ -56,18 +54,20 @@ instance Xmlable Subroutine where
       returnTypeXml =
         case returnType of
           Nothing -> []
-          Just returnType -> [toXml returnType]
+          Just returnType -> [XmlNode "returnType" [] [toXml returnType]]
     in
       XmlNode
         "subroutine"
         [ ("type", show subroutineType)
         , ("name", name)
         ]
-        [ XmlNode "returnType" [] returnTypeXml
-        , XmlNode "parameters" [] (map toXml parameters)
-        , XmlNode "locals" [] (map toXml localVars)
-        , XmlNode "body" [] (map toXml body)
-        ]
+        (
+          returnTypeXml ++
+          [ XmlNode "parameters" [] (map toXml parameters)
+          , XmlNode "locals" [] (map toXml localVars)
+          , XmlNode "body" [] (map toXml body)
+          ]
+        )
 
 data Parameter =
   Parameter Type String
@@ -82,9 +82,7 @@ instance Xmlable VarDec where
     XmlNode
       "variable"
       []
-      [ XmlNode "type" [] [toXml varType]
-      , XmlNode "names" [] (map (\name -> XmlNode "name" [] [TextNode name]) names)
-      ]
+      (toXml varType : map (\name -> XmlNode "name" [] [TextNode name]) names)
 
 data Statement
   = Let VarAccess Expression
@@ -92,13 +90,63 @@ data Statement
   | While Expression [Statement]
   | Do SubCall
   | Return (Maybe Expression)
+instance Xmlable Statement where
+  toXml (Let access expression) =
+    XmlNode
+      "let"
+      []
+      [ XmlNode "access" [] [toXml access]
+      , toXml expression
+      ]
+  toXml (If expression ifBlock elseBlock) =
+    XmlNode
+      "if"
+      []
+      [ toXml expression
+      , XmlNode "true" [] (map toXml ifBlock)
+      , XmlNode "false" [] (map toXml elseBlock)
+      ]
+  toXml (While expression block) =
+    XmlNode
+      "while"
+      []
+      [ toXml expression
+      , XmlNode "block" [] (map toXml block)
+      ]
+  toXml (Do subCall) =
+    XmlNode "do" [] [toXml subCall]
+  toXml (Return expression) =
+    let
+      children =
+        case expression of
+          Nothing -> []
+          Just expression -> [toXml expression]
+    in
+      XmlNode "return" [] children
 
 data VarAccess
   = Var String
   | Subscript String Expression
+instance Xmlable VarAccess where
+  toXml (Var name) = XmlNode "var" [("name", name)] []
+  toXml (Subscript name expression) =
+    XmlNode
+      "subscript"
+      [("name", name)]
+      [toXml expression]
 
 data Expression
   = Expression Term [(Op, Term)]
+instance Xmlable Expression where
+  toXml (Expression firstTerm opTerms) =
+    let
+      opTermToXml (op, term) = [toXml op, toXml term]
+      remainingTermsXml = map opTermToXml opTerms
+    in
+      XmlNode
+        "expression"
+        []
+        (toXml firstTerm : flatten remainingTermsXml)
 
 data Op
   = Plus
@@ -110,6 +158,21 @@ data Op
   | LessThan
   | GreaterThan
   | EqualTo
+instance Xmlable Op where
+  toXml op = 
+    let
+      tag = case op of
+        Plus -> "plus"
+        Minus -> "minus"
+        Times -> "times"
+        Div -> "div"
+        And -> "and"
+        Or -> "or"
+        LessThan -> "lt"
+        GreaterThan -> "gt"
+        EqualTo -> "equal"
+    in
+      XmlNode tag [] []
 
 data Term
   = IntConst Int
@@ -121,14 +184,40 @@ data Term
   | Access VarAccess
   | SubroutineCall SubCall
   | Unary UnaryOp Term
+instance Xmlable Term where
+  toXml (IntConst int) = XmlNode "int" [("value", show int)] []
+  toXml (StringConst string) = XmlNode "string" [("value", string)] []
+  toXml (Parenthesized expression) = toXml expression
+  toXml (BoolConst bool) = XmlNode "bool" [("value", show bool)] []
+  toXml This = XmlNode "this" [] []
+  toXml Null = XmlNode "null" [] []
+  toXml (Access access) = XmlNode "access" [] [toXml access]
+  toXml (SubroutineCall subCall) = XmlNode "call" [] [toXml subCall]
+  toXml (Unary op term) = XmlNode "unary" [] [toXml op, toXml term]
 
 data SubCall
   = Unqualified String [Expression]
   | Qualified String String [Expression]
+instance Xmlable SubCall where
+  toXml (Unqualified name expressions) =
+    XmlNode
+      "unqualified"
+      [("name", name)]
+      (map toXml expressions)
+  toXml (Qualified namespace name expressions) =
+    XmlNode
+      "qualified"
+      [ ("namespace", namespace)
+      , ("name", name)
+      ]
+      (map toXml expressions)
 
 data UnaryOp
   = LogicalNot
   | IntegerNegate
+instance Xmlable UnaryOp where
+  toXml LogicalNot = XmlNode "not" [] []
+  toXml IntegerNegate = XmlNode "neg" [] []
 
 newtype Parser a = Parser (String -> Maybe (a, String))
 

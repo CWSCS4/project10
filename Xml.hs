@@ -20,8 +20,8 @@ replace match replacement (c : cs) =
     else
       c : csReplaced
 
-escape :: String -> String
-escape =
+escapeForAttr :: String -> String
+escapeForAttr =
   replace '"' "\\\"" .
   replace '\\' "\\\\"
 
@@ -30,21 +30,25 @@ flatten [] = []
 flatten ([] : remaining) = flatten remaining
 flatten ((x : xs) : remaining) = x : flatten (xs : remaining)
 
--- TODO: if node has no children, don't have separate end tag
 toLines :: Xml -> [String]
 toLines (XmlNode tag attributes children) =
   let
-    individualAttributeString (name, value) = name ++ "=\"" ++ (escape value) ++ "\""
+    individualAttributeString (name, value) = name ++ "=\"" ++ (escapeForAttr value) ++ "\""
     attributeString =
       case attributes of
         [] -> ""
         _ ->
           " " ++
           intercalate " " (map individualAttributeString attributes)
+    openingTag = "<" ++ tag ++ attributeString
   in
-    ["<" ++ tag ++ attributeString ++ ">"] ++
-    (indent (flatten (map toLines children))) ++
-    ["</" ++ tag ++ ">"]
+    case children of
+      [] ->
+        [openingTag ++ " />"]
+      _ ->
+        [openingTag ++ ">"] ++
+        (indent (flatten (map toLines children))) ++
+        ["</" ++ tag ++ ">"]
 toLines (TextNode text) = [text]
 
 instance Show Xml where
