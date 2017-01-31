@@ -137,7 +137,8 @@ instance Xmlable Statement where
   toXml (If expression ifBlock elseBlock) =
     let
       elseBlockXml = case elseBlock of
-        [] -> []
+        [] ->
+          []
         _ ->
           [ keywordNode "else"
           , symbolNode "{"
@@ -191,7 +192,8 @@ instance Xmlable Statement where
         )
 instance Xmlable [Statement] where
   toXml statements =
-    XmlNode "statements" (map toXml statements)
+    XmlNode "statements"
+      (map toXml statements)
 
 data VarAccess
   = Var String
