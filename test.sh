@@ -1,7 +1,10 @@
 #!/bin/bash
 
-ghc Main.hs -Wall -o Main
+ghc -Wall -XFlexibleInstances Main.hs -o Main || exit
 
 for jackFile in */*.jack; do
-	./Main $jackFile > $jackFile.cs.xml
+	outFile=$jackFile.cs.xml
+	./Main $jackFile > $outFile
+	correctXmlFile=${jackFile%jack}xml
+	diff $correctXmlFile $outFile
 done

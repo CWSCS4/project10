@@ -18,7 +18,7 @@ main = do
           hPutStrLn stderr ("Could not parse " ++ fileName)
           exitFailure
         Just (jackClass, _) ->
-          putStrLn (show (toXml jackClass))
+          putStr (show (toXml jackClass))
       hClose fileHandle
     _ -> do
       hPutStrLn stderr "Syntax: ./Main JackClass.jack"

@@ -28,24 +28,24 @@ flatten ((x : xs) : remaining) = x : flatten (xs : remaining)
 escapeForText :: String -> String
 escapeForText =
   replace '<' "&lt;" .
-  replace '>' "&gt;"
+  replace '>' "&gt;" .
+  replace '&' "&amp;"
 
 toLines :: Xml -> [String]
 toLines xml =
   case xml of
     XmlNode tag children ->
-      case children of
-        [] ->
-          ["<" ++ tag ++ " />"]
-        _ ->
-          ["<" ++ tag ++ ">"] ++
-          indent (flatten (map toLines children)) ++
-          ["</" ++ tag ++ ">"]
+      ["<" ++ tag ++ ">"] ++
+      indent (flatten (map toLines children)) ++
+      ["</" ++ tag ++ ">"]
     TextNode tag text ->
       ["<" ++ tag ++ "> " ++ escapeForText text ++ " </" ++ tag ++ ">"]
 
 instance Show Xml where
-  show = intercalate "\n" . toLines
+  show = intercalate "" . map (++"\r\n") . toLines --must use CRLF so diff works with provided files
 
 class Xmlable a where
   toXml :: a -> Xml
+
+class XmlArrayable a where
+  toXmlArray :: a -> [Xml]
