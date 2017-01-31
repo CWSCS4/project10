@@ -3,11 +3,11 @@ module Xml where
 import Data.List (intercalate)
 
 data Xml
-  = XmlNode String [(String, String)] [Xml]
-  | TextNode String
+  = XmlNode String [Xml]
+  | TextNode String String
 
 indent :: [String] -> [String]
-indent = map (\line -> '\t' : line)
+indent = map ("  " ++)
 
 replace :: Char -> String -> String -> String
 replace _ _ "" = ""
@@ -20,36 +20,29 @@ replace match replacement (c : cs) =
     else
       c : csReplaced
 
-escapeForAttr :: String -> String
-escapeForAttr =
-  replace '"' "\\\"" .
-  replace '\\' "\\\\"
-
 flatten :: [[a]] -> [a]
 flatten [] = []
 flatten ([] : remaining) = flatten remaining
 flatten ((x : xs) : remaining) = x : flatten (xs : remaining)
 
+escapeForText :: String -> String
+escapeForText =
+  replace '<' "&lt;" .
+  replace '>' "&gt;"
+
 toLines :: Xml -> [String]
-toLines (XmlNode tag attributes children) =
-  let
-    individualAttributeString (name, value) = name ++ "=\"" ++ (escapeForAttr value) ++ "\""
-    attributeString =
-      case attributes of
-        [] -> ""
+toLines xml =
+  case xml of
+    XmlNode tag children ->
+      case children of
+        [] ->
+          ["<" ++ tag ++ " />"]
         _ ->
-          " " ++
-          intercalate " " (map individualAttributeString attributes)
-    openingTag = "<" ++ tag ++ attributeString
-  in
-    case children of
-      [] ->
-        [openingTag ++ " />"]
-      _ ->
-        [openingTag ++ ">"] ++
-        (indent (flatten (map toLines children))) ++
-        ["</" ++ tag ++ ">"]
-toLines (TextNode text) = [text]
+          ["<" ++ tag ++ ">"] ++
+          indent (flatten (map toLines children)) ++
+          ["</" ++ tag ++ ">"]
+    TextNode tag text ->
+      ["<" ++ tag ++ "> " ++ escapeForText text ++ " </" ++ tag ++ ">"]
 
 instance Show Xml where
   show = intercalate "\n" . toLines

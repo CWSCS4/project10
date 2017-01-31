@@ -4,14 +4,29 @@ import Data.Char (isDigit, isAlpha, isSpace)
 import Control.Monad (liftM, ap)
 import Xml (Xml (TextNode, XmlNode), Xmlable, toXml, flatten)
 
+keywordNode :: String -> Xml
+keywordNode = TextNode "keyword"
+
+identifierNode :: String -> Xml
+identifierNode = TextNode "identifier"
+
+symbolNode :: String -> Xml
+symbolNode = TextNode "symbol"
+
 data Class
   = Class String [ClassVar] [Subroutine]
 instance Xmlable Class where
   toXml (Class name classVars subroutines) =
-    XmlNode
-      "class"
-      [("name", name)]
-      (map toXml classVars ++ map toXml subroutines)
+    XmlNode "class"
+      (
+        [ keywordNode "class"
+        , identifierNode name
+        , symbolNode "{"
+        ] ++
+        map toXml classVars ++
+        map toXml subroutines ++
+        [symbolNode "}"]
+      )
 
 data Type
   = JackInt
@@ -19,70 +34,85 @@ data Type
   | JackBool
   | JackClass String
 instance Xmlable Type where
-  toXml JackInt = XmlNode "int" [] []
-  toXml JackChar = XmlNode "char" [] []
-  toXml JackBool = XmlNode "bool" [] []
-  toXml (JackClass className) = XmlNode "class" [("name", className)] []
+  toXml JackInt = keywordNode "int"
+  toXml JackChar = keywordNode "char"
+  toXml JackBool = keywordNode "boolean"
+  toXml (JackClass className) = identifierNode className
 
 data ClassVarScope
   = Static
   | Field
-instance Show ClassVarScope where
-  show Static = "static"
-  show Field = "field"
+instance Xmlable ClassVarScope where
+  toXml Static = keywordNode "static"
+  toXml Field = keywordNode "field"
 
 data ClassVar
   = ClassVar ClassVarScope VarDec
 instance Xmlable ClassVar where
   toXml (ClassVar scope dec) =
-    XmlNode "classVar" [("scope", show scope)] [toXml dec]
+    XmlNode "classVarDec"
+      (toXml scope : varDecXml dec)
 
 data SubroutineType
   = Method
   | Constructor
   | Function
-instance Show SubroutineType where
-  show Method = "method"
-  show Constructor = "constructor"
-  show Function = "function"
+instance Xmlable SubroutineType where
+  toXml subroutineType =
+    let
+      typeString = case subroutineType of
+        Method -> "method"
+        Constructor -> "constructor"
+        Function -> "function"
+    in
+      keywordNode typeString
 
 data Subroutine
   = Subroutine SubroutineType (Maybe Type) String [Parameter] [VarDec] [Statement]
 instance Xmlable Subroutine where
   toXml (Subroutine subroutineType returnType name parameters localVars body) =
     let
-      returnTypeXml =
-        case returnType of
-          Nothing -> []
-          Just returnType -> [XmlNode "returnType" [] [toXml returnType]]
+      returnTypeXml = case returnType of
+        Nothing -> keywordNode "void"
+        Just jackType -> toXml jackType
+      varDecToXml dec =
+        XmlNode "varDec"
+          (keywordNode "var" : varDecXml dec)
     in
       XmlNode
-        "subroutine"
-        [ ("type", show subroutineType)
-        , ("name", name)
-        ]
+        "subroutineDec"
         (
-          returnTypeXml ++
-          [ XmlNode "parameters" [] (map toXml parameters)
-          , XmlNode "locals" [] (map toXml localVars)
-          , XmlNode "body" [] (map toXml body)
+          [ toXml subroutineType
+          , returnTypeXml
+          , identifierNode name
+          , symbolNode "("
+          , XmlNode "parameterList"
+            (intercalate (symbolNode ",") (map parameterXml parameters))
+          , symbolNode ")"
+          , XmlNode "subroutineBody"
+            (
+              [symbolNode "{"] ++
+              map varDecToXml localVars ++
+              [toXml body]
+            )
           ]
         )
 
 data Parameter =
   Parameter Type String
-instance Xmlable Parameter where
-  toXml (Parameter paramType name) =
-    XmlNode "parameter" [("name", name)] [toXml paramType]
+parameterXml :: Parameter -> [Xml]
+parameterXml (Parameter paramType name) =
+  [ toXml paramType
+  , identifierNode name
+  ]
 
 data VarDec =
   VarDec Type [String]
-instance Xmlable VarDec where
-  toXml (VarDec varType names) =
-    XmlNode
-      "variable"
-      []
-      (toXml varType : map (\name -> XmlNode "name" [] [TextNode name]) names)
+varDecXml :: VarDec -> [Xml]
+varDecXml (VarDec varType names) =
+  [toXml varType] ++
+  map identifierNode names ++
+  symbolNode ";"
 
 data Statement
   = Let VarAccess Expression
@@ -260,7 +290,7 @@ satisfies c =
 keyword :: String -> Parser ()
 keyword [] = return ()
 keyword (c:cs) = do
-  satisfies (c ==)
+  _ <- satisfies (c ==)
   keyword cs
 
 parseMap :: (a -> b) -> Parser a -> Parser b
@@ -380,7 +410,7 @@ whiteSpaceParser =
 
 requiredSpaceParser :: Parser ()
 requiredSpaceParser = do
-  oneOrMore $ choice
+  _ <- oneOrMore $ choice
     [ whiteSpaceParser
     , parseLineComment
     , parseBlockComment
