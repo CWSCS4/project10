@@ -6,20 +6,47 @@ import System.Exit
 import System.IO
 import Xml (toXml)
 
+xmlExtension :: String
+xmlExtension = ".cs.xml"
+
+failWithMessage :: String -> IO ()
+failWithMessage message = do
+  hPutStrLn stderr message
+  exitFailure
+
+removeEnd :: Eq a => [a] -> [a] -> Maybe [a]
+removeEnd ending list =
+  if ending == list then
+    Just []
+  else
+    if list == [] then
+      Nothing
+    else
+      let
+        (first : remaining) = list
+        removeEndRemaining = removeEnd ending remaining
+      in
+        case removeEndRemaining of
+          Nothing -> Nothing
+          Just result -> Just (first : result)
+
 main :: IO ()
 main = do
   args <- getArgs
   case args of
     [fileName] -> do
-      fileHandle <- openFile fileName ReadMode
-      contents <- hGetContents fileHandle
+      contents <- readFile fileName
       case parse parseClass contents of
-        Nothing -> do
-          hPutStrLn stderr ("Could not parse " ++ fileName)
-          exitFailure
+        Nothing ->
+         failWithMessage ("Could not parse " ++ fileName)
         Just (jackClass, _) ->
-          putStr (show (toXml jackClass))
-      hClose fileHandle
-    _ -> do
-      hPutStrLn stderr "Syntax: ./Main JackClass.jack"
-      exitFailure
+          case removeEnd ".jack" fileName of
+            Nothing ->
+              failWithMessage "File is not a jack file"
+            Just bareFileName ->
+              let
+                xmlString = show (toXml jackClass)
+              in
+                writeFile (bareFileName ++ xmlExtension) xmlString
+    _ ->
+     failWithMessage "Syntax: ./Main JackClass.jack"

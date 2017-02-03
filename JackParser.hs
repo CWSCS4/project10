@@ -136,28 +136,28 @@ instance Xmlable Statement where
       )
   toXml (If expression ifBlock elseBlock) =
     let
-      elseBlockXml = case elseBlock of
-        [] ->
-          []
-        _ ->
-          [ keywordNode "else"
-          , symbolNode "{"
-          , toXml elseBlock
-          , symbolNode "}"
-          ]
+      ifXml =
+        [ keywordNode "if"
+        , symbolNode "("
+        , toXml expression
+        , symbolNode ")"
+        , symbolNode "{"
+        , toXml ifBlock
+        , symbolNode "}"
+        ]
+      children =
+        case elseBlock of
+          [] ->
+            ifXml
+          _ ->
+            ifXml ++
+            [ keywordNode "else"
+            , symbolNode "{"
+            , toXml elseBlock
+            , symbolNode "}"
+            ]
     in
-      XmlNode "ifStatement"
-        (
-          [ keywordNode "if"
-          , symbolNode "("
-          , toXml expression
-          , symbolNode ")"
-          , symbolNode "{"
-          , toXml ifBlock
-          , symbolNode "}"
-          ] ++
-          elseBlockXml
-        )
+      XmlNode "ifStatement" children
   toXml (While expression block) =
     XmlNode "whileStatement"
       [ keywordNode "while"
@@ -187,7 +187,7 @@ instance Xmlable Statement where
       XmlNode "returnStatement"
         (
           [keywordNode "return"] ++
-          expressionXml ++ 
+          expressionXml ++
           [symbolNode ";"]
         )
 instance Xmlable [Statement] where
@@ -229,7 +229,7 @@ data Op
   | GreaterThan
   | EqualTo
 instance Xmlable Op where
-  toXml op = 
+  toXml op =
     let
       symbol = case op of
         Plus -> "+"

@@ -1,5 +1,6 @@
 module Xml where
 
+import Data.String (unlines)
 data Xml
   = XmlNode String [Xml]
   | TextNode String String
@@ -40,7 +41,7 @@ toLines xml =
       ["<" ++ tag ++ "> " ++ escapeForText text ++ " </" ++ tag ++ ">"]
 
 instance Show Xml where
-  show = concat . map (++ "\r\n") . toLines --must use CRLF so diff works with provided files
+  show = unlines . toLines
 
 class Xmlable a where
   toXml :: a -> Xml
