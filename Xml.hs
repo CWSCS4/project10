@@ -1,6 +1,7 @@
 module Xml where
 
 import Data.String (unlines)
+
 data Xml
   = XmlNode String [Xml]
   | TextNode String String
@@ -21,8 +22,7 @@ replace match replacement (c : cs) =
 
 flatten :: [[a]] -> [a]
 flatten [] = []
-flatten ([] : remaining) = flatten remaining
-flatten ((x : xs) : remaining) = x : flatten (xs : remaining)
+flatten (first : remaining) = first ++ flatten remaining
 
 escapeForText :: String -> String
 escapeForText =
