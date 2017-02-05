@@ -80,26 +80,23 @@ instance Xmlable Subroutine where
         XmlNode "varDec"
           (keywordNode "var" : toXmlArray dec)
     in
-      XmlNode
-        "subroutineDec"
-        (
-          [ toXml subroutineType
-          , returnTypeXml
-          , identifierNode name
-          , symbolNode "("
-          , XmlNode "parameterList"
-            (intercalate [symbolNode ","] (map toXmlArray parameters))
-          , symbolNode ")"
-          , XmlNode "subroutineBody"
-            (
-              [symbolNode "{"] ++
-              map varDecToXml localVars ++
-              [ toXml body
-              , symbolNode "}"
-              ]
-            )
-          ]
-        )
+      XmlNode "subroutineDec"
+        [ toXml subroutineType
+        , returnTypeXml
+        , identifierNode name
+        , symbolNode "("
+        , XmlNode "parameterList"
+          (intercalate [symbolNode ","] (map toXmlArray parameters))
+        , symbolNode ")"
+        , XmlNode "subroutineBody"
+          (
+            [symbolNode "{"] ++
+            map varDecToXml localVars ++
+            [ toXml body
+            , symbolNode "}"
+            ]
+          )
+        ]
 
 data Parameter =
   Parameter Type String
@@ -179,10 +176,8 @@ instance Xmlable Statement where
     let
       expressionXml =
         case maybeExpression of
-          Nothing ->
-            []
-          Just expression ->
-            [toXml expression]
+          Nothing -> []
+          Just expression -> [toXml expression]
     in
       XmlNode "returnStatement"
         (
@@ -255,43 +250,37 @@ data Term
   | SubroutineCall SubCall
   | Unary UnaryOp Term
 instance Xmlable Term where
-  toXml (IntConst int) =
-    XmlNode "term"
-      [TextNode "integerConstant" (show int)]
-  toXml (StringConst string) =
-    XmlNode "term"
-      [TextNode "stringConstant" string]
-  toXml (Parenthesized expression) =
-    XmlNode "term"
-      [ symbolNode "("
-      , toXml expression
-      , symbolNode ")"
-      ]
-  toXml (BoolConst bool) =
+  toXml term =
     let
-      boolKeyword =
-        if bool then "true"
-        else "false"
+      children =
+        case term of
+          IntConst int ->
+            [TextNode "integerConstant" (show int)]
+          StringConst string ->
+            [TextNode "stringConstant" string]
+          Parenthesized expression ->
+            [ symbolNode "("
+            , toXml expression
+            , symbolNode ")"
+            ]
+          BoolConst True ->
+            [keywordNode "true"]
+          BoolConst False ->
+            [keywordNode "false"]
+          This ->
+            [keywordNode "this"]
+          Null ->
+            [keywordNode "null"]
+          Access access ->
+            toXmlArray access
+          SubroutineCall subCall ->
+            toXmlArray subCall
+          Unary op subTerm ->
+            [ toXml op
+            , toXml subTerm
+            ]
     in
-      XmlNode "term"
-        [keywordNode boolKeyword]
-  toXml This =
-    XmlNode "term"
-      [keywordNode "this"]
-  toXml Null =
-    XmlNode "term"
-      [keywordNode "null"]
-  toXml (Access access) =
-    XmlNode "term"
-      (toXmlArray access)
-  toXml (SubroutineCall subCall) =
-    XmlNode "term"
-      (toXmlArray subCall)
-  toXml (Unary op term) =
-    XmlNode "term"
-      [ toXml op
-      , toXml term
-      ]
+      XmlNode "term" children
 
 data SubCall
   = Unqualified String [Expression]
@@ -339,16 +328,15 @@ parseAndThen :: Parser a -> (a -> Parser b) -> Parser b
 parseAndThen pa f =
   Parser $ \s ->
     case parse pa s of
-      Nothing ->
-        Nothing
-      Just (a, s') ->
-        parse (f a) s'
+      Nothing -> Nothing
+      Just (a, s') -> parse (f a) s'
 
 satisfies :: (Char -> Bool) -> Parser Char
 satisfies c =
   Parser $ \s ->
     case s of
-      [] -> Nothing
+      [] ->
+        Nothing
       first : rest ->
         if c first then
           Just (first, rest)
@@ -356,15 +344,13 @@ satisfies c =
           Nothing
 
 keyword :: String -> Parser ()
-keyword [] = return ()
-keyword (c:cs) = do
+keyword "" = return ()
+keyword (c : cs) = do
   _ <- satisfies (c ==)
   keyword cs
 
 parseMap :: (a -> b) -> Parser a -> Parser b
-parseMap aToB aParser = do
-  a <- aParser
-  return (aToB a)
+parseMap aToB pa = parseMap2 (const . aToB) pa (return ())
 
 parseMap2 :: (a -> b -> c) -> Parser a -> Parser b -> Parser c
 parseMap2 f pa pb = do
@@ -486,8 +472,9 @@ requiredSpaceParser = do
   return ()
 
 optionalSpaceParser :: Parser ()
-optionalSpaceParser =
-  parseMap (const ()) (parseOptional requiredSpaceParser)
+optionalSpaceParser = do
+  _ <- parseOptional requiredSpaceParser
+  return ()
 
 parseCommaSeparated :: Parser a -> Parser [a]
 parseCommaSeparated parser = do
@@ -506,7 +493,7 @@ optionalParseCommaSeparated parser =
       parseCommaSeparated parser
 
 parseFail :: Parser a
-parseFail = Parser (\_ -> Nothing)
+parseFail = Parser (const Nothing)
 
 parseVarDec :: Parser VarDec
 parseVarDec = do
@@ -531,7 +518,7 @@ parseOptional parser =
     , return Nothing
     ]
 
-parseIntConstant :: Parser Term
+parseIntConstant :: Parser Int
 parseIntConstant =
   Parser $ \string ->
     case string of
@@ -539,12 +526,14 @@ parseIntConstant =
         Nothing
       firstChar : _ ->
         if isDigit firstChar then
-          let readValue = read (takeWhile isDigit string)
-          in
-            if readValue <= 32767 then
-              Just (IntConst readValue, dropWhile isDigit string)
-            else Nothing
+          Just (read (takeWhile isDigit string), dropWhile isDigit string)
         else Nothing
+
+parseShort :: Parser Term
+parseShort = do
+  int <- parseIntConstant
+  if int <= 32767 then return (IntConst int)
+  else parseFail
 
 parseStringConstant :: Parser Term
 parseStringConstant = do
@@ -578,6 +567,7 @@ parseParenthesized = do
   keyword "("
   optionalSpaceParser
   expression <- parseExpression
+  optionalSpaceParser
   keyword ")"
   return (Parenthesized expression)
 
@@ -625,7 +615,7 @@ parseUnaryOperation = do
 parseTerm :: Parser Term
 parseTerm =
   choice
-    [ parseIntConstant
+    [ parseShort
     , parseStringConstant
     , parseKeywordValue
       [ ("true", BoolConst True)
@@ -748,7 +738,7 @@ parseReturnStatement =
       keyword "return"
       returnValue <- choice
         [ spaceAndValueParser
-        , parseMap (const Nothing) optionalSpaceParser -- this must follow the return value parser since "return" is at the start of "return value"
+        , parseMap (const Nothing) optionalSpaceParser -- this must come after the return value parser since "return" is at the start of "return value"
         ]
       keyword ";"
       return (Return returnValue)

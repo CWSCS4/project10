@@ -31,14 +31,12 @@ escapeForText =
   replace '&' "&amp;"
 
 toLines :: Xml -> [String]
-toLines xml =
-  case xml of
-    XmlNode tag children ->
-      ["<" ++ tag ++ ">"] ++
-      indent (flatten (map toLines children)) ++
-      ["</" ++ tag ++ ">"]
-    TextNode tag text ->
-      ["<" ++ tag ++ "> " ++ escapeForText text ++ " </" ++ tag ++ ">"]
+toLines (XmlNode tag children) =
+  ["<" ++ tag ++ ">"] ++
+  indent (flatten (map toLines children)) ++
+  ["</" ++ tag ++ ">"]
+toLines (TextNode tag text) =
+  ["<" ++ tag ++ "> " ++ escapeForText text ++ " </" ++ tag ++ ">"]
 
 instance Show Xml where
   show = unlines . toLines
