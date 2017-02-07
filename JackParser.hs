@@ -604,7 +604,7 @@ getClass mbVal=
 convertXML classInput =
   let classToParse = getClass classInput
   in
-    xmlClass classToParse
+    writeFile "test.xml" (xmlClass classToParse)
 
 
 xmlClass :: Class -> String
@@ -612,7 +612,7 @@ xmlClass (Class name classVars subroutines) =
   let
     toReturn = "<class>\n<keyword>class</keyword>"
   in
-    toReturn ++ xmlIdentifier name ++ "\n<symbol>{<symbol>"++ xmlClassVars "\n<classVarDec>" classVars ++ "\n</classVarDec>"++ xmlSubroutines subroutines++"\n<symbol>}</symbol>\n</class>"
+    toReturn ++ xmlIdentifier name ++ "\n<symbol>{<symbol>"++ xmlClassVars "\n<classVarDec>" classVars ++ "\n</classVarDec>"++ xmlSubroutines "" subroutines++"\n<symbol>}</symbol>\n</class>"
 
 xmlIdentifier :: String -> String
 xmlIdentifier identifier=
@@ -625,6 +625,16 @@ xmlClassVars previous list=
     case (list !! 0) of
       ClassVar scope vardecs ->
         xmlClassVars (previous++(xmlScope scope)++(xmlVarDec vardecs)++"\n</classVarDec>\n<classVarDec>") (drop 1 list)
+
+
+xmlVarDecs :: String ->[VarDec] -> String
+xmlVarDecs previous list=
+  if (length list == 0) then take (length previous-length "\n<varDec>") previous ++ "\n<symbol>;</symbol>"
+  else
+    case (list !! 0) of
+      varDecObj ->
+        xmlVarDecs (previous++(xmlVarDec varDecObj)++"\n</varDec>\n<varDec>") (drop 1 list)
+
 
 xmlScope :: ClassVarScope -> String
 xmlScope (Field) = "\n<keyword>field</keyword>"
@@ -656,7 +666,7 @@ xmlSubroutines previous listSubs =
 
 xmlSubroutinesIndiv :: Subroutine -> String
 xmlSubroutinesIndiv (Subroutine sType mType name params vardecs statements)=
-  "\n<subroutineDec>" ++ xmlSubroutineType sType ++ xmlMaybeType mType ++ xmlIdentifier name ++ xmlParameter "<symbol>(</symbol><parameterList>" params ++"</parameterList><symbol>)</symbol>"++ xmlVarDec "<varDec>" vardecs ++ "\n<symbol>;</symbol>\n</varDec>"++xmlStatements statements
+  "\n<subroutineDec>" ++ xmlSubroutineType sType ++ xmlMaybeType mType ++ xmlIdentifier name ++ xmlParameter "<symbol>(</symbol><parameterList>" params ++"</parameterList><symbol>)</symbol>"++  xmlVarDecs "\n<varDec>" vardecs ++ "\n<symbol>;</symbol>\n</varDec>"++xmlStatements statements
 
 xmlSubroutineType :: SubroutineType -> String
 xmlSubroutineType (Method)="\n<keyword>method</keyword>"
@@ -666,16 +676,48 @@ xmlSubroutineType (Function)="\n<keyword>function</keyword>"
 xmlMaybeType :: (Maybe Type) -> String
 xmlMaybeType input=
   case input of
-    Nothing -> "\n<keyword>void<\keyword>"
-    Just (value) -> "\n<keyword>"++value++"<\keyword>"
+    Nothing -> "\n<keyword>void</keyword>"
+    Just (value) -> "\n<keyword>"++xmlType value++"</keyword>"
 
 xmlParameter :: String ->[Parameter] -> String
 xmlParameter previous params =
-  if length params = 0 then take (length previous-length "\n<symbol>,</symbol>") previous
+  if length params == 0 then take (length previous-length "\n<symbol>,</symbol>") previous
   else
     case params !! 0 of
       Parameter jType name-> xmlParameter (previous++xmlType jType++xmlIdentifier name++"<symbol>,</symbol>") (drop 1 params)
 
-data Subroutine
-  = Subroutine SubroutineType (Maybe Type) String [Parameter] [VarDec] [Statement]
-  deriving Show
+xmlStatements :: String -> [Statement] -> String
+xmlStatements previous statements =
+  if length statements == 0 then previous
+  else
+    xmlStatements (previous++(xmlStatementsIndiv statements !! 0) (drop 1 params)
+
+xmlVarAcess :: VarAccess -> String
+xmlVarAcess = undefined
+
+xmlExpression :: Expression -> String
+xmlExpression expr =
+  case expr of
+    Expression term listOpTerms -> "\n<expression>"++xmlTerm term++xmlOpTerms listOpTerms++"\n<expression>"
+
+xmlTerm :: Term -> String
+xmlTerm (IntConst int)= "\n<integerConstant>"++ show int ++ "</integerConstant>"
+xmlTerm (StringConst string)= "\n<stringConstant>" ++ string ++ "</stringConstant>"
+xmlTerm (Parenthesized expr)= "\n<symbol>(</symbol>"++xmlExpression expr++ "\n<sybmol>)<\symbol>"
+xmlTerm (This)= "\n<keyword>this</keyword>"
+xmlTerm (Null)= "\n<keyword>null</keyword>"
+xmlTerm (Access vAccess)= 
+xmlTerm (SubroutineCall subCall)= 
+xmlTerm (Unary unaryOp term)= 
+
+xmlStatementsIndiv :: Statement -> String
+xmlStatementsIndiv (Let vAccess expr) =
+  xmlVarAcess vAcess ++ xmlExpression expr
+
+xmlStatementsIndiv (If expr thenList elseList) =
+
+xmlStatementsIndiv (While expr whileList) =
+
+xmlStatementsIndiv (Do subCall) =
+
+xmlStatementsIndiv (Return maybeExpr) =
