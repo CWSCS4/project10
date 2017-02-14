@@ -703,7 +703,16 @@ xmlExpression expr =
   case expr of
     Expression term listOpTerms -> "\n<expression>"++xmlTerm term++xmlOpTerms listOpTerms++"\n<expression>"
 
-xmlOpTerms = undefined
+xmlOpTerms :: [(Op, Term)] -> String
+xmlOpTerms [] = ""
+xmlOpTerms ((op, term):opTermsRem) =
+	if length opTermsRem == 0
+		then xmlOp op ++ xmlTerm term
+	else
+		xmlOp op ++ xmlTerm term ++ (if (not (length opTermsRem==0))
+			then "\n<symbol>,<symbol>"
+			else "") ++ xmlOpTerms opTermsRem
+
 
 xmlTerm :: Term -> String
 xmlTerm (IntConst int)= "\n<integerConstant>"++ show int ++ "</integerConstant>"
@@ -734,7 +743,18 @@ xmlStatementsIndiv (Do subCall) =
 
 xmlStatementsIndiv (Return maybeExpr) =
   "\n<returnStatement>\n<keyword>return</keyword>"++xmlReturn maybeExpr++"\n</returnStatement>"
-  
+
+xmlOp :: Op -> String
+xmlOp Plus = "\n<symbol>+<symbol>"
+xmlOp Minus = "\n<symbol>-<symbol>"
+xmlOp Times = "\n<symbol>*<symbol>"
+xmlOp Div = "\n<symbol>/<symbol>"
+xmlOp And = "\n<symbol>&<symbol>"
+xmlOp Or = "\n<symbol>|<symbol>"
+xmlOp LessThan = "\n<symbol><<symbol>"
+xmlOp GreaterThan = "\n<symbol>><symbol>"
+xmlOp EqualTo = "\n<symbol>=<symbol>"
+
 xmlSubcall :: SubCall -> String
 xmlSubcall (Unqualified string exprList) =
   xmlIdentifier string ++ "\n<symbol>(</symbol>"++xmlExpressionList++"\n<symbol>)</symbol>\n<symbol>;</symbol>"
@@ -745,4 +765,7 @@ xmlReturn :: (Maybe Expression)->String
 xmlReturn input=
   case input of
     Nothing -> ""
-    Just (value) -> "\n<keyword>return</keyword>"++xmlExpression input++"\n<symbol>;</return>"
+    Just (value) -> "\n<keyword>return</keyword>"++(if isNothing input then
+    	""
+    	else
+    		xmlExpression (fromJust input))++"\n<symbol>;</return>"
