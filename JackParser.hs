@@ -666,7 +666,7 @@ xmlSubroutines previous listSubs =
 
 xmlSubroutinesIndiv :: Subroutine -> String
 xmlSubroutinesIndiv (Subroutine sType mType name params vardecs statements)=
-  "\n<subroutineDec>" ++ xmlSubroutineType sType ++ xmlMaybeType mType ++ xmlIdentifier name ++ "\n<symbol>(</symbol>"++xmlParameter "\n<parameterList>" params ++"</parameterList>\n<symbol>)</symbol>\n<symbol>{</symbol>"++  xmlVarDecs "\n<varDec>" vardecs ++ "\n<symbol>;</symbol>\n</varDec>"++xmlStatements "" statements
+  "\n<subroutineDec>" ++ xmlSubroutineType sType ++ xmlMaybeType mType ++ xmlIdentifier name ++ "\n<symbol>(</symbol>"++xmlParameter "\n<parameterList>" params ++"\n<symbol>)</symbol>\n<symbol>{</symbol>"++  xmlVarDecs "\n<varDec>" vardecs ++ "\n<symbol>;</symbol>\n</varDec>"++xmlStatements "" statements
 
 xmlSubroutineType :: SubroutineType -> String
 xmlSubroutineType (Method)="\n<keyword>method</keyword>"
@@ -681,7 +681,10 @@ xmlMaybeType input=
 
 xmlParameter :: String ->[Parameter] -> String
 xmlParameter previous params =
-  if length params == 0 then take (length previous-length "\n<symbol>,</symbol>") previous
+  if length params == 0 then take (length previous-length "\n<symbol>,</symbol>") previous ++ (if not (length previous ==0) then
+    "\n</parameterList>"
+    else
+      "")
   else
     case params !! 0 of
       Parameter jType name-> xmlParameter (previous++xmlType jType++xmlIdentifier name++"\n<symbol>,</symbol>") (drop 1 params)
@@ -720,10 +723,26 @@ xmlStatementsIndiv :: Statement -> String
 xmlStatementsIndiv (Let vAccess expr) =
   "\n<keyword>let</keyword>" ++ xmlVarAccess vAccess ++ xmlExpression expr ++ "\n<symbol>;</symbol>"
 
-xmlStatementsIndiv (If expr thenList elseList) = undefined
+xmlStatementsIndiv (If expr thenList elseList) =
+  "\n<ifStatement>\n<keyword>if</keyword>\n<symbol>(</symbol>"++xmlExpression expr++"\n<symbol>)</symbol>\n<symbol>{</symbol>\n<statements>"++xmlStatements "" thenList++"\n</statements>\n<statements>"++xmlStatements "" thenList++"\n</statements>\n<symbol>}</symbol>\n</ifStatement>"
 
-xmlStatementsIndiv (While expr whileList) = undefined
+xmlStatementsIndiv (While expr whileList) =
+  "\n<whileStatement>\n<keyword>while</keyword>\n<symbol>(</symbol>"++xmlExpression expr++"\n<symbol>)</symbol>\n<symbol>{</symbol>\n<statements>"++xmlStatements "" whileList++"\n</statements>\n<symbol>}</symbol>\n</whileStatement>"
 
-xmlStatementsIndiv (Do subCall) = undefined
+xmlStatementsIndiv (Do subCall) =
+  "\n<doStatement>\n<keyword>do</keyword>"++xmlSubcall subCall++"\n</doStatement>"
 
-xmlStatementsIndiv (Return maybeExpr) = undefined
+xmlStatementsIndiv (Return maybeExpr) =
+  "\n<returnStatement>\n<keyword>return</keyword>"++xmlReturn maybeExpr++"\n</returnStatement>"
+  
+xmlSubcall :: SubCall -> String
+xmlSubcall (Unqualified string exprList) =
+  xmlIdentifier string ++ "\n<symbol>(</symbol>"++xmlExpressionList++"\n<symbol>)</symbol>\n<symbol>;</symbol>"
+xmlSubcall (Qualified string string2 exprList) =
+  xmlIdentifier string ++ "\n<symbol>.</symbol>"++xmlIdentifier string2++"\n<symbol>(</symbol>"++xmlExpressionList++"\n<symbol>)</symbol>\n<symbol>;</symbol>"
+
+xmlReturn :: (Maybe Expression)->String
+xmlReturn input=
+  case input of
+    Nothing -> ""
+    Just (value) -> "\n<keyword>return</keyword>"++xmlExpression input++"\n<symbol>;</return>"
