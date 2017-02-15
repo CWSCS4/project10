@@ -721,7 +721,7 @@ xmlTerm (Parenthesized expr)= "\n<symbol>(</symbol>"++xmlExpression expr++ "\n<s
 xmlTerm (This)= "\n<keyword>this</keyword>"
 xmlTerm (Null)= "\n<keyword>null</keyword>"
 xmlTerm (Access vAccess)= undefined
-xmlTerm (SubroutineCall subCall)= undefined
+xmlTerm (SubroutineCall subCall)= xmlSubcall subCall
 xmlTerm (Unary unaryOp term)= xmlUnaryOp unaryOp ++ xmlTerm term
 
 xmlUnaryOp :: UnaryOp -> String
@@ -757,9 +757,14 @@ xmlOp EqualTo = "\n<symbol>=<symbol>"
 
 xmlSubcall :: SubCall -> String
 xmlSubcall (Unqualified string exprList) =
-  xmlIdentifier string ++ "\n<symbol>(</symbol>"++xmlExpressionList++"\n<symbol>)</symbol>\n<symbol>;</symbol>"
+  xmlIdentifier string ++ "\n<symbol>(</symbol>\n<expressionList>"++xmlExpressionList exprList++"\n</expressionList>\n<symbol>)</symbol>\n<symbol>;</symbol>"
 xmlSubcall (Qualified string string2 exprList) =
-  xmlIdentifier string ++ "\n<symbol>.</symbol>"++xmlIdentifier string2++"\n<symbol>(</symbol>"++xmlExpressionList++"\n<symbol>)</symbol>\n<symbol>;</symbol>"
+  xmlIdentifier string ++ "\n<symbol>.</symbol>"++xmlIdentifier string2++"\n<symbol>(</symbol>\n<expressionList>"++xmlExpressionList exprList++"\n</expressionList>\n<symbol>)</symbol>\n<symbol>;</symbol>"
+
+xmlExpressionList :: [Expression]->String
+xmlExpression [] = ""
+xmlExpressionList (first:remaining) =
+  xmlExpression first ++ "\n<symbol>,</symbol>"++xmlExpressionList remaining
 
 xmlReturn :: (Maybe Expression)->String
 xmlReturn input=
