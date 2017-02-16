@@ -391,11 +391,8 @@ ifParser =
     spaceParserOpt
     keyword "}"
     spaceParserOpt
-    keyword "{"
-    spaceParserOpt
     elseStatement <- multipleStatementsParser
     spaceParserOpt
-    keyword "}"
     return (If expr statement elseStatement)
 
 whileParser :: Parser Statement
@@ -612,7 +609,7 @@ xmlClass (Class name classVars subroutines) =
   let
     toReturn = "<class>\n<keyword>class</keyword>"
   in
-    toReturn ++ xmlIdentifier name ++ "\n<symbol>{<symbol>"++ xmlClassVars "\n<classVarDec>" classVars++ xmlSubroutines "" subroutines++"\n<symbol>}</symbol>\n</class>"
+    toReturn ++ xmlIdentifier name ++ "\n<symbol>{<symbol>"++ xmlClassVars "\n<classVarDec>" classVars++ xmlSubroutines "<subroutineList>" subroutines++"\n</subroutineList>\n<symbol>}</symbol>\n</class>"
 
 xmlIdentifier :: String -> String
 xmlIdentifier identifier=
@@ -624,7 +621,7 @@ xmlClassVars previous list=
   else
     case (list !! 0) of
       ClassVar scope vardecs ->
-        xmlClassVars (previous++(xmlScope scope)++(xmlVarDec vardecs)++"\n</classVarDec>\n<symbol>;</symbol>\n<classVarDec>") (drop 1 list)
+        xmlClassVars (previous++(xmlScope scope)++(xmlVarDec vardecs)++"\n<symbol>;</symbol>\n</classVarDec>\n<classVarDec>") (drop 1 list)
 
 
 xmlVarDecs :: String ->[VarDec] -> String
@@ -677,7 +674,7 @@ xmlMaybeType :: (Maybe Type) -> String
 xmlMaybeType input=
   case input of
     Nothing -> "\n<keyword>void</keyword>"
-    Just (value) -> "\n<keyword>"++xmlType value++"</keyword>"
+    Just (value) -> xmlType value
 
 xmlParameter :: String ->[Parameter] -> String
 xmlParameter previous params =
