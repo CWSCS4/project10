@@ -696,7 +696,9 @@ xmlStatements previous statements =
     xmlStatements (previous++(xmlStatementsIndiv (statements !! 0))) (drop 1 statements)
 
 xmlVarAccess :: VarAccess -> String
-xmlVarAccess = undefined
+xmlVarAccess (Var string)= xmlIdentifier string
+xmlVarAccess (Subscript string expr)=
+  xmlIdentifier string ++ "\n<symbol>[</symbol" ++ xmlExpression expr ++ "\n<symbol>]</symbol>"
 
 xmlExpression :: Expression -> String
 xmlExpression expr =
@@ -706,12 +708,12 @@ xmlExpression expr =
 xmlOpTerms :: [(Op, Term)] -> String
 xmlOpTerms [] = ""
 xmlOpTerms ((op, term):opTermsRem) =
-	if length opTermsRem == 0
-		then xmlOp op ++ xmlTerm term
-	else
-		xmlOp op ++ xmlTerm term ++ (if (not (length opTermsRem==0))
-			then "\n<symbol>,<symbol>"
-			else "") ++ xmlOpTerms opTermsRem
+  if length opTermsRem == 0
+    then xmlOp op ++ xmlTerm term
+  else
+    xmlOp op ++ xmlTerm term ++ (if (not (length opTermsRem==0))
+      then "\n<symbol>,<symbol>"
+      else "") ++ xmlOpTerms opTermsRem
 
 
 xmlTerm :: Term -> String
@@ -720,7 +722,7 @@ xmlTerm (StringConst string)= "\n<stringConstant>" ++ string ++ "</stringConstan
 xmlTerm (Parenthesized expr)= "\n<symbol>(</symbol>"++xmlExpression expr++ "\n<symbol>)</symbol>"
 xmlTerm (This)= "\n<keyword>this</keyword>"
 xmlTerm (Null)= "\n<keyword>null</keyword>"
-xmlTerm (Access vAccess)= undefined
+xmlTerm (Access vAccess)= xmlVarAccess vAccess
 xmlTerm (SubroutineCall subCall)= xmlSubcall subCall
 xmlTerm (Unary unaryOp term)= xmlUnaryOp unaryOp ++ xmlTerm term
 
@@ -762,7 +764,7 @@ xmlSubcall (Qualified string string2 exprList) =
   xmlIdentifier string ++ "\n<symbol>.</symbol>"++xmlIdentifier string2++"\n<symbol>(</symbol>\n<expressionList>"++xmlExpressionList exprList++"\n</expressionList>\n<symbol>)</symbol>\n<symbol>;</symbol>"
 
 xmlExpressionList :: [Expression]->String
-xmlExpression [] = ""
+xmlExpressionList [] = ""
 xmlExpressionList (first:remaining) =
   xmlExpression first ++ "\n<symbol>,</symbol>"++xmlExpressionList remaining
 
@@ -771,6 +773,6 @@ xmlReturn input=
   case input of
     Nothing -> ""
     Just (value) -> "\n<keyword>return</keyword>"++(if isNothing input then
-    	""
-    	else
-    		xmlExpression (fromJust input))++"\n<symbol>;</return>"
+      ""
+      else
+        xmlExpression (fromJust input))++"\n<symbol>;</return>"
