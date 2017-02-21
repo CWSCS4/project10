@@ -609,7 +609,7 @@ xmlClass (Class name classVars subroutines) =
   let
     toReturn = "<class>\n<keyword>class</keyword>"
   in
-    toReturn ++ xmlIdentifier name ++ "\n<symbol>{<symbol>"++ xmlClassVars "\n<classVarDec>" classVars++ xmlSubroutines "<subroutineList>" subroutines++"\n</subroutineList>\n<symbol>}</symbol>\n</class>"
+    toReturn ++ xmlIdentifier name ++ "\n<symbol>{<symbol>"++ xmlClassVars "\n<classVarDec>" classVars++ xmlSubroutines "" subroutines++"n<symbol>}</symbol>\n</class>"
 
 xmlIdentifier :: String -> String
 xmlIdentifier identifier=
@@ -626,11 +626,11 @@ xmlClassVars previous list=
 
 xmlVarDecs :: String ->[VarDec] -> String
 xmlVarDecs previous list=
-  if (length list == 0) then take (length previous-length "\n<varDec>") previous
+  if (length list == 0) then take (length previous-length "\n<symbol>;</symbol>") previous
   else
     case (list !! 0) of
       varDecObj ->
-        xmlVarDecs (previous++(xmlVarDec varDecObj)++"\n</varDec>\n<symbol>;</symbol>\n<varDec>") (drop 1 list)
+        xmlVarDecs (previous++"\n<varDec>"++(xmlVarDec varDecObj)++"\n</varDec>\n<symbol>;</symbol>") (drop 1 list)
 
 
 xmlScope :: ClassVarScope -> String
@@ -663,7 +663,7 @@ xmlSubroutines previous listSubs =
 
 xmlSubroutinesIndiv :: Subroutine -> String
 xmlSubroutinesIndiv (Subroutine sType mType name params vardecs statements)=
-  "\n<subroutineDec>" ++ xmlSubroutineType sType ++ xmlMaybeType mType ++ xmlIdentifier name ++ "\n<symbol>(</symbol>"++xmlParameter "\n<parameterList>" params ++"\n<symbol>)</symbol>\n<symbol>{</symbol>"++  xmlVarDecs "\n<varDec>" vardecs ++ "\n<symbol>;</symbol>\n</varDec>"++xmlStatements "" statements
+  "\n<subroutineDec>" ++ xmlSubroutineType sType ++ xmlMaybeType mType ++ xmlIdentifier name ++ "\n<symbol>(</symbol>"++xmlParameter "\n<parameterList>" params ++"\n<symbol>)</symbol>\n<subroutineBody>\n<symbol>{</symbol>"++  xmlVarDecs "\n<varDec>" vardecs ++xmlStatements "\n<statements>" statements++"\n</statements>\n</subroutineBody>"
 
 xmlSubroutineType :: SubroutineType -> String
 xmlSubroutineType (Method)="\n<keyword>method</keyword>"
@@ -700,7 +700,7 @@ xmlVarAccess (Subscript string expr)=
 xmlExpression :: Expression -> String
 xmlExpression expr =
   case expr of
-    Expression term listOpTerms -> "\n<expression>"++xmlTerm term++xmlOpTerms listOpTerms++"\n<expression>"
+    Expression term listOpTerms -> "\n<expression>\n<term>"++xmlTerm term++"\n</term>"++xmlOpTerms listOpTerms++"\n</expression>"
 
 xmlOpTerms :: [(Op, Term)] -> String
 xmlOpTerms [] = ""
@@ -729,7 +729,7 @@ xmlUnaryOp (IntegerNegate)="\n<keyword>-</keyword>"
 
 xmlStatementsIndiv :: Statement -> String
 xmlStatementsIndiv (Let vAccess expr) =
-  "\n<keyword>let</keyword>" ++ xmlVarAccess vAccess ++ xmlExpression expr ++ "\n<symbol>;</symbol>"
+  "\n<letStatement>\n<keyword>let</keyword>" ++ xmlVarAccess vAccess ++ "\n<symbol>=</symbol>" ++xmlExpression expr ++ "\n<symbol>;</symbol>\n</letStatement>"
 
 xmlStatementsIndiv (If expr thenList elseList) =
   "\n<ifStatement>\n<keyword>if</keyword>\n<symbol>(</symbol>"++xmlExpression expr++"\n<symbol>)</symbol>\n<symbol>{</symbol>\n<statements>"++xmlStatements "" thenList++"\n</statements>\n<statements>"++xmlStatements "" thenList++"\n</statements>\n<symbol>}</symbol>\n</ifStatement>"
