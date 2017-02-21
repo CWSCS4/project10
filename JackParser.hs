@@ -653,7 +653,7 @@ xmlType :: Type -> String
 xmlType (JackInt)= "\n<keyword>int</keyword>"
 xmlType (JackChar)= "\n<keyword>char</keyword>"
 xmlType (JackBool)= "\n<keyword>bool</keyword>"
-xmlType (JackClass string)= "\n<keyword>"++string++"</keyword>"
+xmlType (JackClass string)= "\n<identifier>"++string++"</identifier>"
 
 xmlSubroutines :: String -> [Subroutine] -> String
 xmlSubroutines previous listSubs =
