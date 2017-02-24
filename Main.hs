@@ -2,7 +2,8 @@ module Main where
 
 import JackParser
 
+main :: IO ()
 main = do
 	contents <- getContents
-	parsed <- parse parseClass contents
+	let parsed = parse parseClass contents
 	putStr (convertXML parsed)

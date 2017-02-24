@@ -235,26 +235,37 @@ blockCommentHelper =
   Parser $ \s->
     let afterRemove = dropWhile isNotBCEnd s
     in
-      if ((afterRemove !! 0 == '*') && (afterRemove !! 0 == '/')) then
+      if (afterRemove !! 1 == '/') then
         Just ((), drop 2 afterRemove)
       else
-        let afterRemove = drop 1 afterRemove
-        in Just((), drop 1 afterRemove)
+        let afterRemove' = drop 1 afterRemove
+        in parse blockCommentHelper afterRemove'
 
-spaceParser :: Parser ()
-spaceParser =
+spaceParserHelper :: Parser ()
+spaceParserHelper =
   Parser $ \s->
     let afterRemove = dropWhile isSpace s
     in
       if afterRemove == s then Nothing
       else Just ((), afterRemove)
 
+spaceParser :: Parser ()
+spaceParser = do
+  (choice [lineCommentParser,
+   blockCommentParser,
+    spaceParserHelper])
+  zeroOrMore (choice [lineCommentParser,
+    blockCommentParser,
+    spaceParserHelper])
+  return ()
+
+
 spaceParserOpt :: Parser ()
-spaceParserOpt =
-  Parser $ \s->
-    let afterRemove = dropWhile isSpace s
-    in
-      Just ((), afterRemove)
+spaceParserOpt = do
+  zeroOrMore (choice [lineCommentParser,
+    blockCommentParser,
+    spaceParserHelper])
+  return ()
 
 varDecParser :: Parser VarDec
 varDecParser =
@@ -578,6 +589,7 @@ qualifiedSubCallParser =
 
 parseClass :: Parser Class
 parseClass = do
+  spaceParserOpt
   keyword "class"
   spaceParser
   name <- identifier
