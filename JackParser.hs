@@ -619,13 +619,13 @@ convertXML classInput =
 xmlClass :: Class -> String
 xmlClass (Class name classVars subroutines) =
   let
-    toReturn = "<class>\n<keyword>class</keyword>"
+    toReturn = "<class>\n<keyword> class </keyword>"
   in
-    toReturn ++ xmlIdentifier name ++ "\n<symbol>{</symbol>"++ xmlClassVars "\n<classVarDec>" classVars++ xmlSubroutines "" subroutines++"\n<symbol>}</symbol>\n</class>"
+    toReturn ++ xmlIdentifier name ++ "\n<symbol> { </symbol>"++ xmlClassVars "\n<classVarDec>" classVars++ xmlSubroutines "" subroutines++"\n<symbol> } </symbol>\n</class>"
 
 xmlIdentifier :: String -> String
 xmlIdentifier identifier=
-  "\n<identifier>"++identifier++"</identifier>"
+  "\n<identifier> "++identifier++" </identifier>"
 
 xmlClassVars :: String ->[ClassVar] -> String
 xmlClassVars previous list=
@@ -633,16 +633,16 @@ xmlClassVars previous list=
   else
     case (list !! 0) of
       ClassVar scope vardecs ->
-        xmlClassVars (previous++(xmlScope scope)++(xmlVarDec vardecs)++"\n<symbol>;</symbol>\n</classVarDec>\n<classVarDec>") (drop 1 list)
+        xmlClassVars (previous++(xmlScope scope)++(xmlVarDec vardecs)++"\n<symbol> ; </symbol>\n</classVarDec>\n<classVarDec>") (drop 1 list)
 
 
 xmlVarDecs :: String ->[VarDec] -> String
 xmlVarDecs previous list=
-  if (length list == 0) then take (length previous-length "\n<symbol>;</symbol>") previous
+  if (length list == 0) then take (length previous-length "\n<symbol> ; </symbol>") previous
   else
     case (list !! 0) of
       varDecObj ->
-        xmlVarDecs (previous++"\n<varDec>"++(xmlVarDec varDecObj)++"\n</varDec>\n<symbol>;</symbol>") (drop 1 list)
+        xmlVarDecs (previous++"\n<varDec>"++(xmlVarDec varDecObj)++"\n</varDec>\n<symbol> ; </symbol>") (drop 1 list)
 
 
 xmlScope :: ClassVarScope -> String
@@ -651,9 +651,9 @@ xmlScope (Static) = "\n<keyword>static</keyword>"
 
 xmlIdentifierList :: String -> [String]->String
 xmlIdentifierList previous input=
-  if length input == 0 then take (length previous-length "\n<symbol>,</symbol>") previous
+  if length input == 0 then take (length previous-length "\n<symbol> , </symbol>") previous
   else
-    xmlIdentifierList (previous++"\n<indentifier>"++(input !! 0)++ "</identifier>\n<symbol>,</symbol>") (drop 1 input)
+    xmlIdentifierList (previous++"\n<identifier>"++(input !! 0)++ "</identifier>\n<symbol> , </symbol>") (drop 1 input)
 
 xmlVarDec :: VarDec -> String
 xmlVarDec input=
@@ -662,10 +662,10 @@ xmlVarDec input=
       xmlType jType++xmlIdentifierList "" names
 
 xmlType :: Type -> String
-xmlType (JackInt)= "\n<keyword>int</keyword>"
-xmlType (JackChar)= "\n<keyword>char</keyword>"
-xmlType (JackBool)= "\n<keyword>bool</keyword>"
-xmlType (JackClass string)= "\n<keyword>"++string++"</keyword>"
+xmlType (JackInt)= "\n<keyword> int </keyword>"
+xmlType (JackChar)= "\n<keyword> char </keyword>"
+xmlType (JackBool)= "\n<keyword> bool </keyword>"
+xmlType (JackClass string)= "\n<keyword> "++string++" </keyword>"
 
 xmlSubroutines :: String -> [Subroutine] -> String
 xmlSubroutines previous listSubs =
@@ -675,7 +675,7 @@ xmlSubroutines previous listSubs =
 
 xmlSubroutinesIndiv :: Subroutine -> String
 xmlSubroutinesIndiv (Subroutine sType mType name params vardecs statements)=
-  "\n<subroutineDec>" ++ xmlSubroutineType sType ++ xmlMaybeType mType ++ xmlIdentifier name ++ "\n<symbol>(</symbol>"++xmlParameter "\n<parameterList>" params ++"\n<symbol>)</symbol>\n<subroutineBody>\n<symbol>{</symbol>"++  xmlVarDecs "\n<varDec>" vardecs ++xmlStatements "\n<statements>" statements++"\n</statements>\n<symbol>}</symbol>\n</subroutineBody>\n</subroutineDec>"
+  "\n<subroutineDec>" ++ xmlSubroutineType sType ++ xmlMaybeType mType ++ xmlIdentifier name ++ "\n<symbol> ( </symbol>"++xmlParameter "\n<parameterList>" params ++"\n<symbol> ) </symbol>\n<subroutineBody>\n<symbol> { </symbol>"++  xmlVarDecs "\n<varDec>" vardecs ++xmlStatements "\n<statements>" statements++"\n</statements>\n<symbol> } </symbol>\n</subroutineBody>\n</subroutineDec>"
 
 xmlSubroutineType :: SubroutineType -> String
 xmlSubroutineType (Method)="\n<keyword>method</keyword>"
@@ -685,17 +685,17 @@ xmlSubroutineType (Function)="\n<keyword>function</keyword>"
 xmlMaybeType :: (Maybe Type) -> String
 xmlMaybeType input=
   case input of
-    Nothing -> "\n<keyword>void</keyword>"
+    Nothing -> "\n<keyword> void </keyword>"
     Just (value) -> xmlType value
 
 xmlParameter :: String ->[Parameter] -> String
 xmlParameter previous params =
   if ((length params == 0)) then
-    (if not (previous == "\n<parameterList>") then take (length previous-length "\n<symbol>,</symbol>") previous
+    (if not (previous == "\n<parameterList>") then take (length previous-length "\n<symbol> , </symbol>") previous
     else previous)++ "\n</parameterList>"
   else
     case params !! 0 of
-      Parameter jType name-> xmlParameter (previous++xmlType jType++xmlIdentifier name++"\n<symbol>,</symbol>") (drop 1 params)
+      Parameter jType name-> xmlParameter (previous++xmlType jType++xmlIdentifier name++"\n<symbol> , </symbol>") (drop 1 params)
 
 xmlStatements :: String -> [Statement] -> String
 xmlStatements previous statements =
@@ -706,7 +706,7 @@ xmlStatements previous statements =
 xmlVarAccess :: VarAccess -> String
 xmlVarAccess (Var string)= xmlIdentifier string
 xmlVarAccess (Subscript string expr)=
-  xmlIdentifier string ++ "\n<symbol>[</symbol" ++ xmlExpression expr ++ "\n<symbol>]</symbol>"
+  xmlIdentifier string ++ "\n<symbol> [ </symbol" ++ xmlExpression expr ++ "\n<symbol> ] </symbol>"
 
 xmlExpression :: Expression -> String
 xmlExpression expr =
@@ -720,66 +720,66 @@ xmlOpTerms ((op, term):opTermsRem) =
     then xmlOp op ++ "\n<term>"++xmlTerm term++"\n</term>"
   else
     xmlOp op ++ "\n<term>"++xmlTerm term++"\n</term>" ++ (if (not (length opTermsRem==0))
-      then "\n<symbol>,<symbol>"
+      then "\n<symbol> , <symbol>"
       else "") ++ xmlOpTerms opTermsRem
 
 
 xmlTerm :: Term -> String
-xmlTerm (IntConst int)= "\n<integerConstant>"++ show int ++ "</integerConstant>"
-xmlTerm (StringConst string)= "\n<stringConstant>" ++ string ++ "</stringConstant>"
-xmlTerm (Parenthesized expr)= "\n<symbol>(</symbol>"++xmlExpression expr++ "\n<symbol>)</symbol>"
-xmlTerm (This)= "\n<keyword>this</keyword>"
-xmlTerm (Null)= "\n<keyword>null</keyword>"
+xmlTerm (IntConst int)= "\n<integerConstant> "++ show int ++ " </integerConstant>"
+xmlTerm (StringConst string)= "\n<stringConstant> " ++ string ++ " </stringConstant>"
+xmlTerm (Parenthesized expr)= "\n<symbol> ( </symbol>"++xmlExpression expr++ "\n<symbol> ) </symbol>"
+xmlTerm (This)= "\n<keyword> this </keyword>"
+xmlTerm (Null)= "\n<keyword> null </keyword>"
 xmlTerm (Access vAccess)= xmlVarAccess vAccess
 xmlTerm (SubroutineCall subCall)= xmlSubcall subCall
 xmlTerm (Unary unaryOp term)= xmlUnaryOp unaryOp ++ "\n<term>"++xmlTerm term++"\n</term>"
 
 xmlUnaryOp :: UnaryOp -> String
-xmlUnaryOp (LogicalNot)="\n<keyword>~</keyword>"
-xmlUnaryOp (IntegerNegate)="\n<keyword>-</keyword>"
+xmlUnaryOp (LogicalNot)="\n<keyword> ~ </keyword>"
+xmlUnaryOp (IntegerNegate)="\n<keyword> - </keyword>"
 
 xmlStatementsIndiv :: Statement -> String
 xmlStatementsIndiv (Let vAccess expr) =
-  "\n<letStatement>\n<keyword>let</keyword>" ++ xmlVarAccess vAccess ++ "\n<symbol>=</symbol>" ++xmlExpression expr ++ "\n<symbol>;</symbol>\n</letStatement>"
+  "\n<letStatement>\n<keyword> let </keyword>" ++ xmlVarAccess vAccess ++ "\n<symbol> = </symbol>" ++xmlExpression expr ++ "\n<symbol> ; </symbol>\n</letStatement>"
 
 xmlStatementsIndiv (If expr thenList elseList) =
-  "\n<ifStatement>\n<keyword>if</keyword>\n<symbol>(</symbol>"++xmlExpression expr++"\n<symbol>)</symbol>\n<symbol>{</symbol>\n<statements>"++xmlStatements "" thenList++"\n</statements><symbol>}</symbol>\n</ifStatement>"++xmlStatements "" thenList
+  "\n<ifStatement>\n<keyword> if </keyword>\n<symbol> ( </symbol>"++xmlExpression expr++"\n<symbol> ) </symbol>\n<symbol> { </symbol>\n<statements>"++xmlStatements "" thenList++"\n</statements>\n<symbol> } </symbol>\n</ifStatement>"++xmlStatements "" elseList
 
 xmlStatementsIndiv (While expr whileList) =
-  "\n<whileStatement>\n<keyword>while</keyword>\n<symbol>(</symbol>"++xmlExpression expr++"\n<symbol>)</symbol>\n<symbol>{</symbol>\n<statements>"++xmlStatements "" whileList++"\n</statements>\n<symbol>}</symbol>\n</whileStatement>"
+  "\n<whileStatement>\n<keyword> while </keyword>\n<symbol> ( </symbol>"++xmlExpression expr++"\n<symbol> ) </symbol>\n<symbol> { </symbol>\n<statements>"++xmlStatements "" whileList++"\n</statements>\n<symbol> } </symbol>\n</whileStatement>"
 
 xmlStatementsIndiv (Do subCall) =
-  "\n<doStatement>\n<keyword>do</keyword>"++xmlSubcall subCall++"\n</doStatement>"
+  "\n<doStatement>\n<keyword> do </keyword>"++xmlSubcall subCall++"\n</doStatement>"
 
 xmlStatementsIndiv (Return maybeExpr) =
   "\n<returnStatement>"++xmlReturn maybeExpr++"\n</returnStatement>"
 
 xmlOp :: Op -> String
-xmlOp Plus = "\n<symbol>+</symbol>"
-xmlOp Minus = "\n<symbol>-</symbol>"
-xmlOp Times = "\n<symbol>*</symbol>"
-xmlOp Div = "\n<symbol>/</symbol>"
-xmlOp And = "\n<symbol>&amp;</symbol>"
-xmlOp Or = "\n<symbol>|</symbol>"
-xmlOp LessThan = "\n<symbol>&lt;</symbol>"
-xmlOp GreaterThan = "\n<symbol>&gt;</symbol>"
-xmlOp EqualTo = "\n<symbol>=</symbol>"
+xmlOp Plus = "\n<symbol> + </symbol>"
+xmlOp Minus = "\n<symbol> - </symbol>"
+xmlOp Times = "\n<symbol> *< /symbol>"
+xmlOp Div = "\n<symbol> / </symbol>"
+xmlOp And = "\n<symbol> &amp; </symbol>"
+xmlOp Or = "\n<symbol> | </symbol>"
+xmlOp LessThan = "\n<symbol> &lt; </symbol>"
+xmlOp GreaterThan = "\n<symbol> &gt; </symbol>"
+xmlOp EqualTo = "\n<symbol> = </symbol>"
 
 xmlSubcall :: SubCall -> String
 xmlSubcall (Unqualified string exprList) =
-  xmlIdentifier string ++ "\n<symbol>(</symbol>\n<expressionList>"++xmlExpressionList exprList++"\n</expressionList>\n<symbol>)</symbol>\n<symbol>;</symbol>"
+  xmlIdentifier string ++ "\n<symbol> ( </symbol>\n<expressionList>"++xmlExpressionList exprList++"\n</expressionList>\n<symbol> ) </symbol>\n<symbol> ; </symbol>"
 xmlSubcall (Qualified string string2 exprList) =
-  xmlIdentifier string ++ "\n<symbol>.</symbol>"++xmlIdentifier string2++"\n<symbol>(</symbol>\n<expressionList>"++xmlExpressionList exprList++"\n</expressionList>\n<symbol>)</symbol>\n<symbol>;</symbol>"
+  xmlIdentifier string ++ "\n<symbol> . </symbol>"++xmlIdentifier string2++"\n<symbol> ( </symbol>\n<expressionList>"++xmlExpressionList exprList++"\n</expressionList>\n<symbol> ) </symbol>\n<symbol> ; </symbol>"
 
 xmlExpressionList :: [Expression]->String
 xmlExpressionList [] = ""
-xmlExpressionList (first:remaining) = xmlExpression first ++ (if length remaining > 0 then "\n<symbol>,</symbol>" else "")++xmlExpressionList remaining
+xmlExpressionList (first:remaining) = xmlExpression first ++ (if length remaining > 0 then "\n<symbol> , </symbol>" else "")++xmlExpressionList remaining
 
 xmlReturn :: (Maybe Expression)->String
 xmlReturn input=
   case input of
-    Nothing -> "\n<keyword>return</keyword>\n<symbol>;</symbol>"
-    Just (value) -> "\n<keyword>return</keyword>"++(if isNothing input then
+    Nothing -> "\n<keyword> return </keyword>\n<symbol> ; </symbol>"
+    Just (value) -> "\n<keyword> return </keyword>"++(if isNothing input then
       ""
       else
-        xmlExpression (fromJust input))++"\n<symbol>;</symbol>"
+        xmlExpression (fromJust input))++"\n<symbol> ; </symbol>"
