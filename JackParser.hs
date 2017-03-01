@@ -625,7 +625,9 @@ xmlClass (Class name classVars subroutines) =
 
 xmlIdentifier :: String -> String
 xmlIdentifier identifier=
-  "\n<identifier> "++identifier++" </identifier>"
+  if ((identifier == "false") || (identifier == "true") || (identifier == "this") || (identifier == "null")) then
+    "\n<keyword> "++identifier++" </keyword>"
+  else "\n<identifier> "++identifier++" </identifier>"
 
 xmlClassVars :: String ->[ClassVar] -> String
 xmlClassVars previous list=
@@ -646,14 +648,14 @@ xmlVarDecs previous list=
 
 
 xmlScope :: ClassVarScope -> String
-xmlScope (Field) = "\n<keyword>field</keyword>"
-xmlScope (Static) = "\n<keyword>static</keyword>"
+xmlScope (Field) = "\n<keyword> field </keyword>"
+xmlScope (Static) = "\n<keyword> static </keyword>"
 
 xmlIdentifierList :: String -> [String]->String
 xmlIdentifierList previous input=
   if length input == 0 then take (length previous-length "\n<symbol> , </symbol>") previous
   else
-    xmlIdentifierList (previous++"\n<identifier>"++(input !! 0)++ "</identifier>\n<symbol> , </symbol>") (drop 1 input)
+    xmlIdentifierList (previous++"\n<identifier> "++(input !! 0)++ " </identifier>\n<symbol> , </symbol>") (drop 1 input)
 
 xmlVarDec :: VarDec -> String
 xmlVarDec input=
@@ -665,7 +667,7 @@ xmlType :: Type -> String
 xmlType (JackInt)= "\n<keyword> int </keyword>"
 xmlType (JackChar)= "\n<keyword> char </keyword>"
 xmlType (JackBool)= "\n<keyword> bool </keyword>"
-xmlType (JackClass string)= "\n<keyword> "++string++" </keyword>"
+xmlType (JackClass string)= "\n<identifier> "++string++" </identifier>"
 
 xmlSubroutines :: String -> [Subroutine] -> String
 xmlSubroutines previous listSubs =
@@ -678,9 +680,9 @@ xmlSubroutinesIndiv (Subroutine sType mType name params vardecs statements)=
   "\n<subroutineDec>" ++ xmlSubroutineType sType ++ xmlMaybeType mType ++ xmlIdentifier name ++ "\n<symbol> ( </symbol>"++xmlParameter "\n<parameterList>" params ++"\n<symbol> ) </symbol>\n<subroutineBody>\n<symbol> { </symbol>"++  xmlVarDecs "\n<varDec>" vardecs ++xmlStatements "\n<statements>" statements++"\n</statements>\n<symbol> } </symbol>\n</subroutineBody>\n</subroutineDec>"
 
 xmlSubroutineType :: SubroutineType -> String
-xmlSubroutineType (Method)="\n<keyword>method</keyword>"
-xmlSubroutineType (Constructor)="\n<keyword>constructor</keyword>"
-xmlSubroutineType (Function)="\n<keyword>function</keyword>"
+xmlSubroutineType (Method)="\n<keyword> method </keyword>"
+xmlSubroutineType (Constructor)="\n<keyword> constructor </keyword>"
+xmlSubroutineType (Function)="\n<keyword> function </keyword>"
 
 xmlMaybeType :: (Maybe Type) -> String
 xmlMaybeType input=

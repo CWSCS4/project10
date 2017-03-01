@@ -55,7 +55,6 @@
 </expression>
 </expressionList>
 <symbol> ) </symbol>
-<symbol> ; </symbol>
 </term>
 </expression>
 <symbol> ; </symbol>
@@ -141,14 +140,16 @@
 <subroutineBody>
 <symbol> { </symbol>
 <varDec>
-<varDec>
+<keyword> var </keyword>
 <keyword> char </keyword>
 <identifier> key </identifier>
-</varDec>
 <symbol> ; </symbol>
+</varDec>
 <varDec>
-<keyword> bool </keyword>
+<keyword> var </keyword>
+<keyword> boolean </keyword>
 <identifier> exit </identifier>
+<symbol> ; </symbol>
 </varDec>
 <statements>
 <letStatement>
@@ -167,7 +168,7 @@
 <symbol> ( </symbol>
 <expression>
 <term>
-<keyword> ~ </keyword>
+<symbol> ~ </symbol>
 <term>
 <identifier> exit </identifier>
 </term>
@@ -204,7 +205,6 @@
 <expressionList>
 </expressionList>
 <symbol> ) </symbol>
-<symbol> ; </symbol>
 </term>
 </expression>
 <symbol> ; </symbol>
@@ -429,7 +429,7 @@
 <symbol> ( </symbol>
 <expression>
 <term>
-<keyword> ~ </keyword>
+<symbol> ~ </symbol>
 <term>
 <symbol> ( </symbol>
 <expression>
@@ -461,7 +461,6 @@
 <expressionList>
 </expressionList>
 <symbol> ) </symbol>
-<symbol> ; </symbol>
 </term>
 </expression>
 <symbol> ; </symbol>
