@@ -708,7 +708,7 @@ xmlStatements previous statements =
 xmlVarAccess :: VarAccess -> String
 xmlVarAccess (Var string)= xmlIdentifier string
 xmlVarAccess (Subscript string expr)=
-  xmlIdentifier string ++ "\n<symbol> [ </symbol" ++ xmlExpression expr ++ "\n<symbol> ] </symbol>"
+  xmlIdentifier string ++ "\n<symbol> [ </symbol>" ++ xmlExpression expr ++ "\n<symbol> ] </symbol>"
 
 xmlExpression :: Expression -> String
 xmlExpression expr =
